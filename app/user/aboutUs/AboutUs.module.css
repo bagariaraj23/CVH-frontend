@@ -1,0 +1,91 @@
+/* AboutUs.module.css */
+.about-container {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 3rem;
+  max-width:full;
+  margin: 0 auto;
+  gap: 2rem;
+  background-color: #ffffff;
+}
+
+.text-section {
+  flex: 1.5;
+}
+
+.text-section h1 {
+  font-size: 2.5rem;
+  color: #1a237e;
+  margin-bottom: 1rem;
+}
+
+.text-section h2 {
+  font-size: 1.8rem;
+  color: #1a237e;
+  margin-bottom: 1rem;
+}
+
+.text-section h3 {
+  font-size: 1.5rem;
+  color: #1a237e;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.text-section p {
+  font-size: 1.1rem;
+  color: #455a64;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.text-section ul {
+  list-style-type: disc;
+  margin-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.text-section li {
+  font-size: 1.1rem;
+  color: #455a64;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+}
+
+.cta-button {
+  background-color: #1a237e;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.cta-button:hover {
+  background-color: #0d1945;
+}
+
+.image-section {
+  flex: 1;
+  max-width: 500px;
+}
+
+.round-image {
+  border-radius: 50%;
+  object-fit: cover;
+  width: 80%; /* Ensure it adapts to parent */
+  height: auto;
+}
+
+@media (max-width: 768px) {
+  .about-container {
+    flex-direction: column;
+    text-align: center;
+  }
+  .image-section {
+    max-width: 100%;
+  }
+}
