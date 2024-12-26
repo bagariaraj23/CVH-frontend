@@ -8,7 +8,7 @@ export const StickyCTA = () => {
       {/* CTA Button */}
       <div className="flex flex-col md:flex-row items-center md:space-x-6">
         <Link
-          href="/get-started"
+          href="/user/AiDoctor"
           className="px-5 py-2 bg-white text-[#12104A] font-semibold rounded-lg shadow-md hover:bg-gray-100 transition duration-300"
         >
           Get Started for Free

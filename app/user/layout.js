@@ -12,13 +12,11 @@ export default function RootLayout({ children }) {
   ];
 
   return (
-    <html lang="en">
-      <body>
-        <Header navItems={navItems} />
-        <main>{children}</main>
-        <StickyCTA/>
-        <Footer /> {/* Add Footer here */}
-      </body>
-    </html>
+    <>
+      <Header navItems={navItems} />
+      <main>{children}</main>
+      <StickyCTA />
+      <Footer /> {/* Add Footer here */}
+    </>
   );
 }
