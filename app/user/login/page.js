@@ -1,82 +1,114 @@
-"use client";
-import { useState } from 'react';
+// "use client";
+// import React, { useState } from "react";
+// import { ethers } from "ethers";
+// import { useRouter } from "next/navigation";
+// import { checkUserRole } from "@/app/utils/api";
 
-export default function CareValueHealth() {
-  const [age, setAge] = useState('');
-  const [gender, setGender] = useState('');
-  const [error, setError] = useState('');
+// export default function LoginPage() {
+//   const [error, setError] = useState(null);
+//   const [loading, setLoading] = useState(false);
+//   const router = useRouter();
 
-  const handleSubmit = () => {
-    if (!age || !gender) {
-      setError('Please provide both age and gender.');
-      return;
-    }
-    if (parseInt(age) < 18) {
-      setError('Age must be 18 or older.');
-      return;
-    }
+//   const connectWallet = async () => {
+//       if (!window.ethereum) {
+//         setError("MetaMask not installed. Please install MetaMask to proceed.");
+//         return;
+//       }
 
-    setError('');
-    // Pass age and gender to chatbot or API
-    console.log('Age:', age, 'Gender:', gender);
-    alert(`Starting chatbot for Age: ${age}, Gender: ${gender}`);
-  };
+//       try {
+//         setLoading(true);
+//         const accounts = await window.ethereum.request({
+//           method: "eth_requestAccounts",
+//         });
+//         const address = accounts[0];
+//         setWalletAddress(address);
+//         await handleRoleCheck(address);
+//       } catch (err) {
+//         setError("Failed to connect wallet. Please try again.");
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
 
-  return (
-    <div className="flex flex-col   items-center justify-center min-h-screen bg-gradient-to-b text-black text-center">
-      <h1 className="text-4xl font-bold mb-4" style={{ color: 'black' }}>
-        Hi, I'm CareValue, your private and personal AI doctor.
-      </h1>
-      <p className="text-lg mb-2">As an AI doctor, my service is fast and free.</p>
-      <p className="text-lg mb-4">I've already helped people in 4,109,128 chats!</p>
-      <p className="text-md mb-8">When we're done, you can have a video visit with a top doctor for $29.</p>
+//     const handleRoleCheck = async (address) => {
+//       try {
+//         const response = await checkUserRole(address);
+//         switch (response.role) {
+//           case "admin":
+//             router.push("/admin/dashboard");
+//             break;
+//           case "doctor":
+//             router.push("/doctor/dashboard");
+//             break;
+//           case "hospital":
+//             router.push("/hospital/dashboard");
+//             break;
+//           case "patient":
+//             router.push("/patient/dashboard");
+//             break;
+//           default:
+//             router.push("/user/verification");
+//         }
+//       } catch (err) {
+//         console.error("Error in handleRoleCheck:", err);
+//         setError("Unable to check user role. Try again later.");
+//       }
+//     };
 
-      <div className="bg-white p-6 rounded-lg shadow-lg w-3/4 md:w-1/2">
-        <label htmlFor="age" className="block text-left mb-2 font-semibold">Age (18+)</label>
-        <input
-          type="number"
-          id="age"
-          value={age}
-          onChange={(e) => setAge(e.target.value)}
-          className="w-full border rounded-md p-2 mb-4 text-black"
-          placeholder="Enter your age"
-        />
+//   // const connectWallet = async () => {
+//   //   if (!window.ethereum) {
+//   //     setError("MetaMask not installed. Please install MetaMask to proceed.");
+//   //     return;
+//   //   }
 
-        <label className="block text-left mb-2 font-semibold">Gender</label>
-        <div className="flex justify-center gap-4 mb-4">
-          <label className="text-black">
-            <input
-              type="radio"
-              name="gender"
-              value="Female"
-              onChange={(e) => setGender(e.target.value)}
-              className="mr-2"
-            />
-            Female
-          </label>
-          <label className="text-black">
-            <input
-              type="radio"
-              name="gender"
-              value="Male"
-              onChange={(e) => setGender(e.target.value)}
-              className="mr-2"
-            />
-            Male
-          </label>
-        </div>
+//   //   try {
+//   //     setLoading(true);
+//   //     const accounts = await window.ethereum.request({
+//   //       method: "eth_requestAccounts",
+//   //     });
+//   //     const walletAddress = accounts[0];
+//   //     const response = await checkUserRole(walletAddress);
 
-        {error && <p className="text-red-500 mb-4">{error}</p>}
+//   //     switch (response.role) {
+//   //       case "admin":
+//   //         router.push("/admin/dashboard");
+//   //         break;
+//   //       case "doctor":
+//   //         router.push("/doctor/dashboard");
+//   //         break;
+//   //       case "hospital":
+//   //         router.push("/hospital/dashboard");
+//   //         break;
+//   //       case "patient":
+//   //         router.push("/patient/dashboard");
+//   //         break;
+//   //       case "under_review":
+//   //         router.push("/user/under-review");
+//   //         break;
+//   //       default:
+//   //         router.push("/user/verification");
+//   //     }
+//   //   } catch (err) {
+//   //     console.error("Error connecting wallet or checking role:", err);
+//   //     setError("Unable to login. Please try again.");
+//   //   } finally {
+//   //     setLoading(false);
+//   //   }
+//   // };
 
-        <button
-          onClick={handleSubmit}
-          className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 w-full"
-        >
-          Get Started
-        </button>
-
-        <p className="text-sm mt-4 text-gray-600">HIPAA compliant and anonymous</p>
-      </div>
-    </div>
-  );
-}
+//   return (
+//     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
+//       <div className="p-6 bg-white shadow rounded-md max-w-md w-full text-center">
+//         <h1 className="text-2xl font-bold mb-4">Login with MetaMask</h1>
+//         {error && <p className="text-red-600 mb-4">{error}</p>}
+//         <button
+//           onClick={connectWallet}
+//           disabled={loading}
+//           className="px-6 py-3 bg-blue-600 text-white rounded hover:bg-blue-500 disabled:opacity-50"
+//         >
+//           {loading ? "Connecting..." : "Connect Wallet"}
+//         </button>
+//       </div>
+//     </div>
+//   );
+// }

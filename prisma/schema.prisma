@@ -13,8 +13,70 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Admin table for managing admins
+model Admin {
+  id           String   @id @default(uuid())
+  walletAddress String   @unique
+  email         String   @unique
+  createdAt     DateTime @default(now())
+}
+
+// Doctor table for storing verified doctors
+model Doctor {
+  id            String   @id @default(uuid())
+  walletAddress String   @unique
+  name          String
+  specialization String
+  licenseNumber String
+  verified      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+}
+
+// Hospital table for storing verified hospitals
+model Hospital {
+  id            String   @id @default(uuid())
+  walletAddress String   @unique
+  name          String
+  registrationId String
+  verified      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+}
+
+// Patient table for storing patient information
+model Patient {
+  id           String   @id @default(uuid())
+  walletAddress String?  @unique
+  name         String
+  email        String    @unique
+  premiumUser  Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+}
+
+// Appointment table for managing doctor-patient appointments
+model Appointment {
+  id         String   @id @default(uuid())
+  patientId  String   @unique
+  doctorId   String
+  timeSlot   DateTime
+  status     String   // 'Pending', 'Confirmed'
+}
+
+// Verification request table for admin verification of doctors and hospitals
+model VerificationRequest {
+  id           String   @id @default(uuid())
+  walletAddress String
+  role          String   // 'Doctor' or 'Hospital'
+  details     String
+  status        String   @default("pending") // 'Pending', 'Verified', 'Rejected'
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  verifiedBy    String?  // Admin who verified the request
+}
+
 model User {
-  id    Int    @id @default(autoincrement())
-  name  String
-  email String @unique
+  id           String   @id @default(uuid())
+  walletAddress String   @unique
+  role          String   // 'Admin', 'Doctor', 'Hospital', etc.
+  status        String   @default("active") // Add this field
+  createdAt     DateTime @default(now())
 }
