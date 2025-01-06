@@ -100,26 +100,57 @@ export const Header = () => {
   const handleRoleCheck = async (address) => {
     try {
       const response = await checkUserRole(address);
-      console.log("Response.role", response, response.role);
-      switch (response.role) {
-        case "admin":
-          router.push("/admin");
+      const { role, status } = response;
+
+      console.log("User role check:", { role, status });
+
+      // Handle different status cases
+      switch (status) {
+        case "verified":
+          // Route to appropriate dashboard based on role
+          switch (role.toLowerCase()) {
+            case "admin":
+              router.push("/admin");
+              break;
+            case "doctor":
+              router.push("/DoctorPanel");
+              break;
+            case "hospital":
+              router.push("/HospitalPanel");
+              break;
+            case "patient":
+              router.push("/PatientPanel");
+              break;
+            default:
+              router.push("/user/verification");
+          }
           break;
-        case "doctor":
-          router.push("/DoctorPanel");
+
+        case "pending":
+          router.push("/user/under-review");
           break;
-        case "hospital":
-          router.push("/HospitalPanel");
+
+        case "not_verified":
+          switch (role.toLowerCase()) {
+            case "none":
+              console.log("coming here ??")
+              alert("The user has been marked as not verified. Please fill the verification Form again!")
+            }
+          router.push("/user/verification");
           break;
-        case "patient":
-          router.push("/PatientPanel");
+
+        case "new":
+          router.push("/user/verification");
           break;
+
         default:
+          console.log("Or here ??")
           router.push("/user/verification");
       }
     } catch (err) {
       console.error("Error in handleRoleCheck:", err);
       setError("Unable to check user role. Try again later.");
+      router.push("/user/verification");
     }
   };
 

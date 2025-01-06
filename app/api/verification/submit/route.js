@@ -1,23 +1,85 @@
 // app/api/verification/submit/route.js
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
+import { NextResponse } from 'next/server';
 
-const prisma = new PrismaClient()
+const prisma = new PrismaClient();
 
-export async function POST(req) {
-    const { walletAddress, role, details } = await req.json();
-    console.log("data in server:", walletAddress + " " + role + " " + details);
-
+export async function POST(request) {
     try {
-        const newRequest = await prisma.verificationRequest.create({
-            data: { walletAddress, role, details },
+        const data = await request.json();
+        const { walletAddress, role, details, name, specialization, licenseNumber, address, registrationId } = data;
+
+        // Check if a verification request already exists
+        const existingRequest = await prisma.verificationRequest.findFirst({
+            where: { walletAddress }
         });
 
-        return new Response(
-            JSON.stringify({ message: "Verification request submitted.", id: newRequest.id }),
-            { status: 201 }
-        );
+        // If request exists and status isn't 'not_verified', return error
+        if (existingRequest && existingRequest.status !== 'not_verified') {
+            return NextResponse.json({
+                success: false,
+                message: "A verification request already exists for this wallet address"
+            });
+        }
+
+        // Create or update user
+        const user = await prisma.user.upsert({
+            where: { walletAddress },
+            update: {
+                role,
+                status: 'pending',
+                details
+            },
+            create: {
+                walletAddress,
+                role,
+                status: 'pending',
+                details
+            }
+        });
+
+        // Create or update verification request
+        const verificationRequest = existingRequest
+            ? await prisma.verificationRequest.update({
+                where: { id: existingRequest.id },
+                data: {
+                    role,
+                    details,
+                    status: 'pending',
+                    name,
+                    specialization,
+                    licenseNumber,
+                    address,
+                    registrationId,
+                    premiumUser: false,
+                    userId: user.id
+                }
+            })
+            : await prisma.verificationRequest.create({
+                data: {
+                    walletAddress,
+                    role,
+                    details,
+                    name,
+                    specialization,
+                    licenseNumber,
+                    address,
+                    registrationId,
+                    premiumUser: false,
+                    userId: user.id
+                }
+            });
+
+        return NextResponse.json({
+            success: true,
+            message: "Verification request submitted successfully"
+        });
+
     } catch (error) {
-        console.error("Error creating verification request:", error);
-        return new Response(JSON.stringify({ error: "Internal server error." }), { status: 500 });
+        console.error('Error submitting verification request:', error);
+        return NextResponse.json({
+            success: false,
+            message: "Failed to submit verification request"
+        }, { status: 500 });
     }
 }

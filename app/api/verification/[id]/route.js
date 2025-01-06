@@ -1,80 +1,99 @@
-import { prisma } from "@/lib/prisma";
+import { PrismaClient } from '@prisma/client';
+import { NextResponse } from 'next/server';
+
+const prisma = new PrismaClient();
 
 export async function PATCH(request, { params }) {
     try {
-        const id = await params.id;
+        // Await the params before using them
+        const { id } = await params;
+
         const { status } = await request.json();
 
-        // First update the user verification status
-        const updatedUser = await prisma.user.update({
+        // First find the verification request
+        const verificationRequest = await prisma.verificationRequest.findUnique({
             where: { id },
+            include: { user: true }
+        });
+
+        if (!verificationRequest) {
+            return NextResponse.json({
+                success: false,
+                message: "Verification request not found"
+            }, { status: 404 });
+        }
+
+        // Update the verification request status
+        const updatedRequest = await prisma.verificationRequest.update({
+            where: { id },
+            data: {
+                status,
+                updatedAt: new Date()
+            }
+        });
+
+        // Update the user status
+        await prisma.user.update({
+            where: { id: verificationRequest.userId },
             data: { status }
         });
 
-        console.log(`api/verification/${id}: ${status}`);
-
-        // If the user is verified, create entry in respective role table
+        // If the status is 'verified', create corresponding role-specific entry
         if (status === 'verified') {
-            const {
-                role,
-                walletAddress,
-                details,
-                name,
-                licenseNumber,
-                specialization,
-                address,
-                registrationId,
-                premiumUser
-            } = updatedUser;
+            const { role, name, specialization, licenseNumber, address, registrationId, walletAddress } = verificationRequest;
 
-            switch (role.toLowerCase()) {
-                case 'doctor':
+            switch (role) {
+                case 'DOCTOR':
                     await prisma.doctor.create({
                         data: {
+                            id: verificationRequest.userId,
                             walletAddress,
-                            name: name || '',
-                            specialization: specialization || '',
-                            details,
-                            licenseNumber: licenseNumber || '',
-                            verified: true
+                            name,
+                            specialization,
+                            licenseNumber,
+                            verified: true,
+                            details: verificationRequest.details
                         }
                     });
                     break;
 
-                case 'hospital':
+                case 'HOSPITAL':
                     await prisma.hospital.create({
                         data: {
+                            id: verificationRequest.userId,
                             walletAddress,
-                            name: name || '',
-                            address: address || '',
-                            registrationId: registrationId || '',
-                            details,
-                            verified: true
+                            name,
+                            address,
+                            registrationId,
+                            verified: true,
+                            details: verificationRequest.details
                         }
                     });
                     break;
 
-                case 'patient':
+                case 'PATIENT':
                     await prisma.patient.create({
                         data: {
+                            id: verificationRequest.userId,
                             walletAddress,
-                            name: name || '',
-                            premiumUser: premiumUser || false,
-                            details
+                            name,
+                            details: verificationRequest.details
                         }
                     });
                     break;
             }
         }
 
-        console.log("Verification updated:", updatedUser);
+        return NextResponse.json({
+            success: true,
+            message: `Verification status updated to ${status}`
+        });
 
-        return Response.json(updatedUser);
     } catch (error) {
-        console.error("Error updating verification:", error);
-        return Response.json(
-            { error: "Failed to update verification status" },
-            { status: 500 }
-        );
+        console.error('Error updating verification:', error);
+        return NextResponse.json({
+            success: false,
+            message: "Failed to update verification status"
+        }, { status: 500 });
     }
 }

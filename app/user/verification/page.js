@@ -4,21 +4,125 @@ import { useRouter } from "next/navigation";
 import { submitVerificationRequest } from "@/app/utils/api";
 
 export default function VerificationForm() {
-    const [role, setRole] = useState("doctor");
-    const [walletAddress, setWalletAddress] = useState("");
-    const [details, setDetails] = useState("");
+    const [formData, setFormData] = useState({
+        walletAddress: "",
+        role: "DOCTOR",
+        details: "",
+        // Doctor fields
+        name: "",
+        specialization: "",
+        licenseNumber: "",
+        // Hospital fields
+        address: "",
+        registrationId: "",
+    });
+
     const router = useRouter();
+
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: type === 'checkbox' ? checked : value
+        }));
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("wallet address, role and verif. details:", walletAddress + " " + role + " " + details );
-        const response = await submitVerificationRequest({ walletAddress, role, details });
-        console.log("Response in user/verification:", JSON.stringify(response));
-        
-        if (response.message === "Verification request submitted.") {
-            router.push("/user/under-review");
-        } else {
-            alert(response.message || "Failed to submit your verification request.");
+
+        try {
+            const response = await submitVerificationRequest(formData);
+
+            if (response.success) {
+                router.push("/user/under-review");
+            } else {
+                alert(response.message || "Failed to submit verification request");
+            }
+        } catch (error) {
+            alert("Error submitting verification request");
+        }
+    };
+
+    const renderRoleSpecificFields = () => {
+        switch (formData.role) {
+            case "DOCTOR":
+                return (
+                    <>
+                        <input
+                            type="text"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            placeholder="Full Name"
+                            className="mt-1 p-2 w-full rounded border"
+                            required
+                        />
+                        <input
+                            type="text"
+                            name="specialization"
+                            value={formData.specialization}
+                            onChange={handleChange}
+                            placeholder="Specialization"
+                            className="mt-1 p-2 w-full rounded border"
+                            required
+                        />
+                        <input
+                            type="text"
+                            name="licenseNumber"
+                            value={formData.licenseNumber}
+                            onChange={handleChange}
+                            placeholder="License Number"
+                            className="mt-1 p-2 w-full rounded border"
+                            required
+                        />
+                    </>
+                );
+            case "HOSPITAL":
+                return (
+                    <>
+                        <input
+                            type="text"
+                            name="name"
+                            value={formData.name}
+                            onChange={handleChange}
+                            placeholder="Hospital Name"
+                            className="mt-1 p-2 w-full rounded border"
+                            required
+                        />
+                        <input
+                            type="text"
+                            name="address"
+                            value={formData.address}
+                            onChange={handleChange}
+                            placeholder="Hospital Address"
+                            className="mt-1 p-2 w-full rounded border"
+                            required
+                        />
+                        <input
+                            type="text"
+                            name="registrationId"
+                            value={formData.registrationId}
+                            onChange={handleChange}
+                            placeholder="Registration ID"
+                            className="mt-1 p-2 w-full rounded border"
+                            required
+                        />
+                    </>
+                );
+            case "PATIENT":
+                return (
+                    <input
+                        type="text"
+                        name="name"
+                        value={formData.name}
+                        onChange={handleChange}
+                        placeholder="Full Name"
+                        className="mt-1 p-2 w-full rounded border"
+                        required
+                    />
+                );
+            default:
+                return null;
         }
     };
 
@@ -28,55 +132,45 @@ export default function VerificationForm() {
                 <h2 className="text-2xl font-bold mb-6 text-center">Verification Form</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label htmlFor="walletAddress" className="block text-sm font-medium text-blue-900">
-                            Wallet Address
-                        </label>
                         <input
                             type="text"
-                            id="walletAddress"
-                            value={walletAddress}
-                            onChange={(e) => setWalletAddress(e.target.value.toLowerCase())}
-                            className="mt-1 p-2 w-full rounded border focus:ring focus:ring-blue-300 focus:outline-none"
-                            placeholder="Enter your wallet address"
+                            name="walletAddress"
+                            value={formData.walletAddress}
+                            onChange={handleChange}
+                            placeholder="Wallet Address"
+                            className="mt-1 p-2 w-full rounded border"
                             required
                         />
                     </div>
                     <div>
-                        <label htmlFor="role" className="block text-sm font-medium text-blue-900">
-                            Role
-                        </label>
                         <select
-                            id="role"
-                            value={role}
-                            onChange={(e) => setRole(e.target.value)}
-                            className="mt-1 p-2 w-full rounded border bg-white focus:ring focus:ring-blue-300 focus:outline-none"
+                            name="role"
+                            value={formData.role}
+                            onChange={handleChange}
+                            className="mt-1 p-2 w-full rounded border"
                         >
-                            <option value="doctor">Doctor</option>
-                            <option value="hospital">Hospital</option>
+                            <option value="DOCTOR">Doctor</option>
+                            <option value="HOSPITAL">Hospital</option>
+                            <option value="PATIENT">Patient</option>
                         </select>
                     </div>
+                    {renderRoleSpecificFields()}
                     <div>
-                        <label htmlFor="details" className="block text-sm font-medium text-blue-900">
-                            Details
-                        </label>
                         <textarea
-                            id="details"
-                            value={details}
-                            onChange={(e) => setDetails(e.target.value)}
-                            className="mt-1 p-2 w-full rounded border focus:ring focus:ring-blue-300 focus:outline-none"
-                            placeholder="Enter your details for verification"
+                            name="details"
+                            value={formData.details}
+                            onChange={handleChange}
+                            placeholder="Additional Details"
+                            className="mt-1 p-2 w-full rounded border"
                             rows="4"
-                            required
                         ></textarea>
                     </div>
-                    <div>
-                        <button
-                            type="submit"
-                            className="w-full py-2 px-4 bg-blue-900 text-white rounded hover:bg-blue-800 focus:ring-4 focus:ring-blue-300"
-                        >
-                            Submit for Verification
-                        </button>
-                    </div>
+                    <button
+                        type="submit"
+                        className="w-full py-2 px-4 bg-blue-900 text-white rounded hover:bg-blue-800"
+                    >
+                        Submit for Verification
+                    </button>
                 </form>
             </div>
         </div>

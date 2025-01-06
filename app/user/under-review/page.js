@@ -65,7 +65,6 @@ export default function UnderReview() {
         }
     };
 
-
     const verifyStatus = async (walletAddress) => {
         try {
             const response = await checkVerificationStatus(walletAddress);

@@ -3,17 +3,23 @@ export const checkUserRole = async (walletAddress) => {
     try {
         const response = await fetch("/api/user/role", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+                "Content-Type": "application/json",
+            },
             body: JSON.stringify({ walletAddress }),
         });
 
         if (!response.ok) {
-            throw new Error("Failed to fetch user role.");
+            throw new Error("Failed to check user role");
         }
 
-        return await response.json();
+        const data = await response.json();
+        return {
+            role: data.role,
+            status: data.status
+        };
     } catch (error) {
-        console.error("Error in checkUserRole:", error);
+        console.error("Error checking user role:", error);
         throw error;
     }
 };

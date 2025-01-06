@@ -12,7 +12,7 @@ export default function AdminVerificationRequests() {
             setLoading(true);
             setError(null);
             try {
-                console.log("Admin is fetching verification requests...");
+                console.log("Admin is fetching pending verification requests...");
                 const data = await fetchVerificationRequests();
                 setRequests(data);
             } catch (err) {
@@ -43,20 +43,13 @@ export default function AdminVerificationRequests() {
         return <div className="min-h-screen p-6 bg-gray-50">Loading...</div>;
     }
 
-    if (error) {
-        return (
-            <div className="min-h-screen p-6 bg-gray-50">
-                <h1 className="text-3xl font-bold mb-6">Verification Requests</h1>
-                <p className="text-red-600">{error}</p>
-            </div>
-        );
-    }
-
     return (
         <div className="min-h-screen p-6 bg-gray-50">
-            <h1 className="text-3xl font-bold mb-6">Verification Requests</h1>
+            <h1 className="text-3xl font-bold mb-6">Pending Verification Requests</h1>
+            {error && <p className="text-red-600 mb-4">{error}</p>}
+
             {requests.length === 0 ? (
-                <p>No verification requests at the moment.</p>
+                <p>No pending verification requests at the moment.</p>
             ) : (
                 <div className="space-y-4">
                     {requests.map((req) => (
@@ -65,6 +58,23 @@ export default function AdminVerificationRequests() {
                                 <p><strong>Wallet Address:</strong> {req.walletAddress}</p>
                                 <p><strong>Role:</strong> {req.role}</p>
                                 <p><strong>Details:</strong> {req.details || "N/A"}</p>
+                                {req.role === 'DOCTOR' && (
+                                    <>
+                                        <p><strong>Name:</strong> {req.name}</p>
+                                        <p><strong>Specialization:</strong> {req.specialization}</p>
+                                        <p><strong>License Number:</strong> {req.licenseNumber}</p>
+                                    </>
+                                )}
+                                {req.role === 'HOSPITAL' && (
+                                    <>
+                                        <p><strong>Name:</strong> {req.name}</p>
+                                        <p><strong>Address:</strong> {req.address}</p>
+                                        <p><strong>Registration ID:</strong> {req.registrationId}</p>
+                                    </>
+                                )}
+                                {req.role === 'PATIENT' && (
+                                    <p><strong>Name:</strong> {req.name}</p>
+                                )}
                             </div>
                             <div className="space-x-4">
                                 <button

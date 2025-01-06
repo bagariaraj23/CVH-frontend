@@ -6,9 +6,14 @@ const prisma = new PrismaClient()
 // Handle requests to fetch all verification requests or check the status of a specific request.
 export async function GET(req) {
     try {
-        // console.log("Fetching all verification requests in server verification/requests/route.js: ...");
-        const requests = await prisma.verificationRequest.findMany();
-        console.log("Fetched all verification requests in server verification/requests/route.js:", requests);
+        // Modified to only fetch pending requests
+        const requests = await prisma.verificationRequest.findMany({
+            where: {
+                status: 'pending'  // Only get requests with pending status
+            }
+        });
+
+        console.log("Fetched pending verification requests:", requests);
         return new Response(JSON.stringify(requests), { status: 200 });
     } catch (error) {
         console.error("Error fetching verification requests:", error);
