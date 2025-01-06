@@ -1,62 +1,80 @@
-// import prisma from "@/prisma/client";
+import { prisma } from "@/lib/prisma";
 
-import { PrismaClient } from "@prisma/client";
+export async function PATCH(request, { params }) {
+    try {
+        const id = await params.id;
+        const { status } = await request.json();
 
-const prisma = new PrismaClient()
+        // First update the user verification status
+        const updatedUser = await prisma.user.update({
+            where: { id },
+            data: { status }
+        });
 
-// export async function PATCH(req, { params }) {
-//     const { id } = params;
-//     const { status } = await req.json();
-//     console.log("api/verification/[id]:", id + " " + status);
-//     const verification = await prisma.verificationRequest.update({
-//         where: { id },
-//         data: { status },
-//     });
+        console.log(`api/verification/${id}: ${status}`);
 
-//     console.log("Verification updated:", verification);
+        // If the user is verified, create entry in respective role table
+        if (status === 'verified') {
+            const {
+                role,
+                walletAddress,
+                details,
+                name,
+                licenseNumber,
+                specialization,
+                address,
+                registrationId,
+                premiumUser
+            } = updatedUser;
 
-//     if (status === "verified") {
-//         await prisma.user.create({
-//             data: {
-//                 walletAddress: verification.walletAddress,
-//                 role: verification.role,
-//             },
-//         });
-//     }
+            switch (role.toLowerCase()) {
+                case 'doctor':
+                    await prisma.doctor.create({
+                        data: {
+                            walletAddress,
+                            name: name || '',
+                            specialization: specialization || '',
+                            details,
+                            licenseNumber: licenseNumber || '',
+                            verified: true
+                        }
+                    });
+                    break;
 
-//     return new Response(JSON.stringify({ success: true }), { status: 200 });
-// }
-export async function PATCH(req, context) {
-    const { params } = context;
-    const { id } = params;
-    const { status } = await req.json();
+                case 'hospital':
+                    await prisma.hospital.create({
+                        data: {
+                            walletAddress,
+                            name: name || '',
+                            address: address || '',
+                            registrationId: registrationId || '',
+                            details,
+                            verified: true
+                        }
+                    });
+                    break;
 
-    console.log("api/verification/[id]:", id, status);
-
-    // Update verification request
-    const verification = await prisma.verificationRequest.update({
-        where: { id },
-        data: { status },
-    });
-
-    console.log("Verification updated:", verification);
-
-    if (status === "verified") {
-        if (!verification.walletAddress || !verification.role) {
-            return new Response(
-                JSON.stringify({ error: "Invalid verification data" }),
-                { status: 400 }
-            );
+                case 'patient':
+                    await prisma.patient.create({
+                        data: {
+                            walletAddress,
+                            name: name || '',
+                            premiumUser: premiumUser || false,
+                            details
+                        }
+                    });
+                    break;
+            }
         }
 
-        // Create user
-        await prisma.user.create({
-            data: {
-                walletAddress: verification.walletAddress,
-                role: verification.role,
-            },
-        });
-    }
+        console.log("Verification updated:", updatedUser);
 
-    return new Response(JSON.stringify({ success: true }), { status: 200 });
+        return Response.json(updatedUser);
+    } catch (error) {
+        console.error("Error updating verification:", error);
+        return Response.json(
+            { error: "Failed to update verification status" },
+            { status: 500 }
+        );
+    }
 }

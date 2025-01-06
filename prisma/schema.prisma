@@ -13,70 +13,116 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  ADMIN
+  DOCTOR
+  HOSPITAL
+  PATIENT
+}
+
+enum Status {
+  pending
+  verified
+  not_verified
+}
+
 // Admin table for managing admins
 model Admin {
-  id           String   @id @default(uuid())
+  id            String   @id @default(uuid())
   walletAddress String   @unique
-  email         String   @unique
   createdAt     DateTime @default(now())
 }
 
 // Doctor table for storing verified doctors
 model Doctor {
-  id            String   @id @default(uuid())
-  walletAddress String   @unique
-  name          String
+  id             String   @id // Foreign key from User table
+  user           User     @relation(fields: [id], references: [id])
+  walletAddress  String   @unique
+  name           String
   specialization String
-  licenseNumber String
-  verified      Boolean  @default(false)
-  createdAt     DateTime @default(now())
+  details        String?
+  licenseNumber  String
+  verified       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 // Hospital table for storing verified hospitals
 model Hospital {
-  id            String   @id @default(uuid())
-  walletAddress String   @unique
-  name          String
+  id             String   @id // Foreign key from User table
+  user           User     @relation(fields: [id], references: [id])
+  walletAddress  String   @unique
+  name           String
+  address        String
   registrationId String
-  verified      Boolean  @default(false)
-  createdAt     DateTime @default(now())
+  details        String?
+  verified       Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 // Patient table for storing patient information
 model Patient {
-  id           String   @id @default(uuid())
+  id            String   @id // Foreign key from User table
+  user          User     @relation(fields: [id], references: [id])
   walletAddress String?  @unique
-  name         String
-  email        String    @unique
-  premiumUser  Boolean   @default(false)
-  createdAt    DateTime  @default(now())
-}
-
-// Appointment table for managing doctor-patient appointments
-model Appointment {
-  id         String   @id @default(uuid())
-  patientId  String   @unique
-  doctorId   String
-  timeSlot   DateTime
-  status     String   // 'Pending', 'Confirmed'
+  name          String
+  premiumUser   Boolean  @default(false)
+  details       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 // Verification request table for admin verification of doctors and hospitals
 model VerificationRequest {
-  id           String   @id @default(uuid())
-  walletAddress String
-  role          String   // 'Doctor' or 'Hospital'
-  details     String
-  status        String   @default("pending") // 'Pending', 'Verified', 'Rejected'
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  verifiedBy    String?  // Admin who verified the request
+  id            String  @id @default(uuid())
+  userId        String  @unique // Foreign key referencing the User table
+  user          User    @relation(fields: [userId], references: [id])
+  walletAddress String  @unique
+  role          Role    @default(PATIENT)
+  details       String? // Additional details from the verification form
+  status        Status  @default(pending)
+  
+  // Doctor-specific fields
+  licenseNumber  String?
+  specialization String?
+
+  // Hospital-specific fields
+  address        String?
+  registrationId String?
+
+  // Patient-specific fields
+  name        String?
+  premiumUser Boolean? @default(false)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  verifiedBy String? // Admin ID or name who verified the request
 }
 
 model User {
-  id           String   @id @default(uuid())
-  walletAddress String   @unique
-  role          String   // 'Admin', 'Doctor', 'Hospital', etc.
-  status        String   @default("active") // Add this field
-  createdAt     DateTime @default(now())
+  id            String  @id @default(uuid())
+  walletAddress String  @unique
+  role          Role    @default(PATIENT)
+  status        Status  @default(pending)
+  details       String? // Additional details provided during verification
+
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  doctor               Doctor?
+  hospital             Hospital?
+  patient              Patient?
+  verificationRequests VerificationRequest[]
+
+  @@index([role])
+  @@index([status])
+}
+
+// Appointment table for managing doctor-patient appointments
+model Appointment {
+  id        String   @id @default(uuid())
+  patientId String   @unique
+  doctorId  String
+  timeSlot  DateTime
+  status    String // 'Pending', 'Confirmed'
 }

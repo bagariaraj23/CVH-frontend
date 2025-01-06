@@ -6,7 +6,7 @@ const prisma = new PrismaClient()
 // Handle requests to fetch all verification requests or check the status of a specific request.
 export async function GET(req) {
     try {
-        console.log("Fetching all verification requests in server verification/requests/route.js: ...");
+        // console.log("Fetching all verification requests in server verification/requests/route.js: ...");
         const requests = await prisma.verificationRequest.findMany();
         console.log("Fetched all verification requests in server verification/requests/route.js:", requests);
         return new Response(JSON.stringify(requests), { status: 200 });
@@ -74,6 +74,10 @@ export async function POST(req) {
                 console.log("Inside hosp", roleDetails);
             } else if (role === "admin") {
                 roleDetails = await prisma.admin.findFirst({
+                    where: { walletAddress },
+                });
+            } else if (role === "patient") {
+                roleDetails = await prisma.patient.findFirst({
                     where: { walletAddress },
                 });
             }

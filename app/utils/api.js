@@ -14,10 +14,9 @@ export const checkUserRole = async (walletAddress) => {
         return await response.json();
     } catch (error) {
         console.error("Error in checkUserRole:", error);
-        throw error; // Propagate the error to the caller
+        throw error;
     }
 };
-
 
 export const submitVerificationRequest = async (data) => {
     const response = await fetch("/api/verification/submit", {

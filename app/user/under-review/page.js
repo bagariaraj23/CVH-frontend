@@ -38,12 +38,10 @@
 import { useEffect, useState } from "react";
 import { checkVerificationStatus } from "@/app/utils/api";
 import { useRouter } from "next/navigation";
-import { ethers } from "ethers";
 
 export default function UnderReview() {
     const [error, setError] = useState(null);
     const router = useRouter();
-    // const [walletAddress, setWalletAddress] = useState("");
     const [loading, setLoading] = useState(false);
 
     const connectWallet = async () => {
@@ -59,7 +57,7 @@ export default function UnderReview() {
             });
             const address = accounts[0];
             // console.log("Connected wallet address:", address);
-            await verifyStatus(address); // Pass the address directly
+            await verifyStatus(address);
         } catch (err) {
             setError("Failed to connect wallet. Please try again.");
         } finally {
@@ -78,13 +76,16 @@ export default function UnderReview() {
 
                 switch (role) {
                     case "doctor":
-                        router.push(`/doctorPanel`);
+                        router.push(`/DoctorPanel`);
                         break;
                     case "hospital":
-                        router.push(`/hospitalPanel`);
+                        router.push(`/HospitalPanel`);
                         break;
                     case "admin":
-                        router.push(`/adminPanel`);
+                        router.push(`/AdminPanel`);
+                        break;
+                    case "patient":
+                        router.push(`/PatientPanel`);
                         break;
                     default:
                         console.warn(`Unknown role: ${role}`);
