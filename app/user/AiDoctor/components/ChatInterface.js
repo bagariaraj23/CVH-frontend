@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { FaMicrophone, FaStop, FaPaperPlane, FaLock } from 'react-icons/fa';
 import { useWallet } from '@/app/hooks/useWallet';
 import AudioVisualizer from './AudioVisualizer';
+import TypewriterEffect from './TypewriterEffect';
 
 export default function ChatInterface({ mode = 'text' }) {
     const [messages, setMessages] = useState([{
@@ -20,6 +21,7 @@ export default function ChatInterface({ mode = 'text' }) {
     const audioRef = useRef(null);
     const audioContext = useRef(null);
     const chatContainerRef = useRef(null);
+    const [isTyping, setIsTyping] = useState(false);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -42,6 +44,43 @@ export default function ChatInterface({ mode = 'text' }) {
         };
     }, [mode]);
 
+    const formatAIResponse = (text) => {
+        // Split text into paragraphs
+        const paragraphs = text.split('\n').filter(p => p.trim());
+        
+        return (
+            <div className="space-y-3">
+                {paragraphs.map((paragraph, idx) => {
+                    // Check if it's a bullet point
+                    if (paragraph.trim().startsWith('•') || paragraph.trim().startsWith('-')) {
+                        return (
+                            <div key={idx} className="flex items-start space-x-2 ml-4">
+                                <span className="text-[#12104A] mt-1">•</span>
+                                <span>{paragraph.replace(/^[•-]\s*/, '')}</span>
+                            </div>
+                        );
+                    }
+                    
+                    // Check if it's a header (ends with ':')
+                    if (paragraph.trim().endsWith(':')) {
+                        return (
+                            <div key={idx} className="font-bold text-[#12104A]">
+                                {paragraph}
+                            </div>
+                        );
+                    }
+                    
+                    // Regular paragraph
+                    return (
+                        <p key={idx} className="text-gray-700">
+                            {paragraph}
+                        </p>
+                    );
+                })}
+            </div>
+        );
+    };
+
     const handleSend = async () => {
         if (!input.trim()) return;
 
@@ -61,7 +100,7 @@ export default function ChatInterface({ mode = 'text' }) {
             if (data.error) {
                 throw new Error(data.error);
             }
-
+            setIsTyping(true);
             setMessages(prev => [...prev, { type: 'bot', content: data.response }]);
             setIsLoading(false); // Stop loading after response is received
 
@@ -254,7 +293,20 @@ export default function ChatInterface({ mode = 'text' }) {
                             ? 'bg-[#12104A] text-white'
                             : 'bg-gray-100 text-gray-800'
                             }`}>
-                            {message.type === 'ai' ? formatAIResponse(message.content) : message.content}
+                            {/* {message.type === 'ai' ? formatAIResponse(message.content) : message.content} */}
+                            {message.type === 'bot' && index === messages.length - 1 ? (
+                                <TypewriterEffect 
+                                    text={message.content} 
+                                    onComplete={() => setIsTyping(false)}
+                                    formatter={formatAIResponse}
+                                />
+                            ) : (
+                                // message.content
+                                message.type === 'bot' ? 
+                                formatAIResponse(message.content) : 
+                                message.content
+    
+                            )}
                         </div>
                     </div>
                 ))}
@@ -290,6 +342,7 @@ export default function ChatInterface({ mode = 'text' }) {
                         placeholder="Type your message..."
                         className="flex-1 p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#12104A] text-black"
                         onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                        disabled={isTyping}
                     />
                     {mode !== 'text' && (
                         <button
@@ -298,14 +351,19 @@ export default function ChatInterface({ mode = 'text' }) {
                                 ? 'bg-red-500 hover:bg-red-600'
                                 : 'bg-[#12104A] hover:bg-[#1a1766]'
                                 } text-white transition-colors`}
+                            disabled={isTyping}
+                                
                         >
                             {isRecording ? <FaStop /> : <FaMicrophone />}
                         </button>
                     )}
                     <button
                         onClick={handleSend}
-                        className="p-2 bg-[#12104A] text-white rounded-full hover:bg-[#1a1766] transition-colors"
-                    >
+                        className={`p-2 bg-[#12104A] text-white rounded-full hover:bg-[#1a1766] transition-colors ${
+                            isTyping ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
+                        disabled={isTyping}
+                  >
                         <FaPaperPlane />
                     </button>
                 </div>
