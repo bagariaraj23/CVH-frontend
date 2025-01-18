@@ -48,6 +48,7 @@ export default function ChatInterface({ mode = 'text' }) {
         const newMessage = { type: 'user', content: input };
         setMessages(prev => [...prev, newMessage]);
         setInput('');
+        setIsLoading(true);
 
         try {
             const response = await fetch('/api/openai/chat', {
@@ -62,12 +63,16 @@ export default function ChatInterface({ mode = 'text' }) {
             }
 
             setMessages(prev => [...prev, { type: 'bot', content: data.response }]);
+            setIsLoading(false); // Stop loading after response is received
+
         } catch (error) {
             console.error('Error:', error);
             setMessages(prev => [...prev, {
                 type: 'bot',
                 content: 'Sorry, I encountered an error. Please try again.'
             }]);
+            setIsLoading(false); // Stop loading after response is received
+
         }
     };
 
@@ -237,9 +242,12 @@ export default function ChatInterface({ mode = 'text' }) {
     };
 
     return (
-        <div className="flex flex-col h-full bg-white rounded-lg shadow-xl">
+       <div className="flex flex-col h-[400px] w-full bg-white rounded-lg shadow-xl">
+
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent"             
+                ref={chatContainerRef}>
+
                 {messages.map((message, index) => (
                     <div key={index} className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}>
                         <div className={`max-w-[80%] p-3 rounded-lg ${message.type === 'user'
@@ -267,7 +275,7 @@ export default function ChatInterface({ mode = 'text' }) {
 
 
             {/* Input Area */}
-            <div className="border-t p-4">
+            <div className="border-t p-4 bg-white">
                 {isPremiumFeature && !isPremium && (
                     <div className="flex items-center justify-center mb-4 text-sm text-gray-600">
                         <FaLock className="mr-2" />
