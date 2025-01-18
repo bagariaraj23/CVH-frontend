@@ -268,7 +268,7 @@ export default function ChatInterface({ mode = 'text' }) {
                 </div>
             )}
                 {isLoading && (
-                <div className="flex justify-center items-center p-2">
+                <div className="flex justify-start items-center p-2">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#12104A]"></div>
                 </div>
             )}
