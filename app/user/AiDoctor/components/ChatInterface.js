@@ -11,6 +11,7 @@ export default function ChatInterface({ mode = 'text' }) {
     }]);
     const [input, setInput] = useState('');
     const [isRecording, setIsRecording] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [isPremiumFeature] = useState(mode !== 'text');
     const { isConnected, isPremium, connectWallet } = useWallet();
     const [audioUrl, setAudioUrl] = useState(null);
@@ -94,6 +95,7 @@ export default function ChatInterface({ mode = 'text' }) {
             };
 
             mediaRecorder.current.onstop = async () => {
+                setIsLoading(true);
                 const audioBlob = new Blob(audioChunks);
                 const formData = new FormData();
                 formData.append('audio', audioBlob);
@@ -120,6 +122,7 @@ export default function ChatInterface({ mode = 'text' }) {
                         setAudioUrl(data.audioUrl);
                         audioRef.current?.play();
                     }
+                    setIsLoading(false); // Stop loading when response is received
                 } catch (error) {
                     console.error('Error:', error);
                     setMessages(prev => [...prev, {
@@ -256,6 +259,12 @@ export default function ChatInterface({ mode = 'text' }) {
                     <AudioVisualizer isRecording={isRecording} />
                 </div>
             )}
+                {isLoading && (
+                <div className="flex justify-center items-center p-2">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#12104A]"></div>
+                </div>
+            )}
+
 
             {/* Input Area */}
             <div className="border-t p-4">
