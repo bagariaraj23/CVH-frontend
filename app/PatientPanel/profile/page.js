@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 
 export default function ProfilePage() {
   const [user, setUser] = useState({
@@ -21,7 +22,10 @@ export default function ProfilePage() {
   const handleSaveChanges = () => {
     setUser({ ...formData });
     setIsModalOpen(false);
-    alert('Profile updated successfully!');
+    toast.success('Profile updated successfully!', {
+      position: "top-right",
+      autoClose: 3000
+    });
   };
 
   return (

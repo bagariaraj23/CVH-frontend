@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { toast } from 'react-toastify';
 
 export function useWallet() {
     const [isConnected, setIsConnected] = useState(false);
@@ -40,7 +41,10 @@ export function useWallet() {
 
     const connectWallet = async () => {
         if (!window.ethereum) {
-            alert('Please install MetaMask to use this feature');
+            toast.error('Please install MetaMask to use this feature', {
+                position: "top-right",
+                autoClose: 5000
+            });
             return;
         }
 
@@ -52,7 +56,10 @@ export function useWallet() {
             setIsConnected(true);
             await checkPremiumStatus(accounts[0]);
         } catch (error) {
-            console.error('Error connecting wallet:', error);
+            toast.error('Error connecting wallet: ' + error.message, {
+                position: "top-right",
+                autoClose: 5000
+            });
         }
     };
 

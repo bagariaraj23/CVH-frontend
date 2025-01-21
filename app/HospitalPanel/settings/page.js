@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 
 export default function Settings() {
   const [settings, setSettings] = useState({
@@ -65,7 +66,10 @@ export default function Settings() {
           <div className="flex justify-end">
             <button
               type="button"
-              onClick={() => alert('Settings saved!')}
+              onClick={() => toast.success('Settings saved!', {
+                position: "top-right",
+                autoClose: 3000
+              })}
               className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
             >
               Save Settings
