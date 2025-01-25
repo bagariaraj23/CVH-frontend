@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { submitVerificationRequest } from "@/app/utils/api";
+import { toast } from 'react-toastify';
 
 export default function VerificationForm() {
     const [formData, setFormData] = useState({
@@ -36,10 +37,16 @@ export default function VerificationForm() {
             if (response.success) {
                 router.push("/user/under-review");
             } else {
-                alert(response.message || "Failed to submit verification request");
+                toast.error(response.message || "Failed to submit verification request", {
+                    position: "top-right",
+                    autoClose: 5000
+                });
             }
         } catch (error) {
-            alert("Error submitting verification request");
+            toast.error("Error submitting verification request", {
+                position: "top-right",
+                autoClose: 5000
+            });
         }
     };
 

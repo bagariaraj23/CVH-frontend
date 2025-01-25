@@ -1,43 +1,8 @@
-// "use client";
-// import { useEffect, useState } from "react";
-// import { checkVerificationStatus } from "@/app/utils/api";
-// import { useRouter } from "next/navigation";
-
-// export default function UnderReview() {
-//     const [status, setStatus] = useState(null);
-//     const [error, setError] = useState(null);
-//     const router = useRouter();
-
-//     useEffect(() => {
-//         async function verifyStatus() {
-//             try {
-//                 const walletAddress = "user_wallet_address_here"; // Get this dynamically
-//                 const response = await checkVerificationStatus(walletAddress);
-//                 if (response.status === "verified") {
-//                     router.push(`/user/dashboard`);
-//                 } else {
-//                     router.push(`/user/verification`);
-//                 }
-//             } catch (err) {
-//                 console.error("Error checking verification status:", err);
-//                 setError("Failed to check verification status. Please try again.");
-//             }
-//         }
-//         verifyStatus();
-//     }, [router]);
-
-//     if (error) {
-//         return <div>Error: {error}</div>;
-//     }
-
-//     return <div>Checking verification status...</div>;
-// }
-
-
 "use client";
 import { useEffect, useState } from "react";
 import { checkVerificationStatus } from "@/app/utils/api";
 import { useRouter } from "next/navigation";
+import { toast } from 'react-toastify';
 
 export default function UnderReview() {
     const [error, setError] = useState(null);
@@ -93,13 +58,21 @@ export default function UnderReview() {
             } else if (response.status === "not_verified") {
                 router.push(`/user/not-verified`);
             } else if (response.status === "not-found") {
-                alert(
-                    `The Verification request for the user with walletAddress: ${walletAddress} not found. Please fill out the verification form to continue!`
+                toast.info(
+                    `The Verification request for the user with walletAddress: ${walletAddress} not found. Please fill out the verification form to continue!`,
+                    {
+                        position: "top-right",
+                        autoClose: 5000
+                    }
                 );
                 router.push(`/user/verification`);
             } else if (response.status === "pending") {
-                alert(
-                    `The Verification request for the user with walletAddress: ${walletAddress} is still Pending.`
+                toast.info(
+                    `The Verification request for the user with walletAddress: ${walletAddress} is still Pending.`,
+                    {
+                        position: "top-right",
+                        autoClose: 5000
+                    }
                 );
                 router.push(`/user/pending`);
             } else {
