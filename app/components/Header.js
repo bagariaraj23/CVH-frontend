@@ -99,10 +99,18 @@ export const Header = () => {
 
   const handleRoleCheck = async (address) => {
     try {
-      const response = await checkUserRole(address);
+      const response = await checkUserRole(address.toLowerCase());
       const { role, status } = response;
 
       console.log("User role check:", { role, status });
+
+      console.log(address, )
+
+      // First check if it's admin
+      if (address === "0x4d5b0Ac9C4148932bd10a28B1E0a064f51f390D4".toLowerCase()) {
+        router.push("/admin");
+        return;
+      }
 
       // Handle different status cases
       switch (status) {
@@ -135,7 +143,7 @@ export const Header = () => {
             case "none":
               console.log("coming here ??")
               alert("The user has been marked as not verified. Please fill the verification Form again!")
-            }
+          }
           router.push("/user/verification");
           break;
 

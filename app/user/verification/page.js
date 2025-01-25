@@ -29,9 +29,16 @@ export default function VerificationForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log(formData);
 
         try {
-            const response = await submitVerificationRequest(formData);
+            const dataToSubmit = {
+                ...formData,
+                walletAddress: formData.walletAddress.toLowerCase() // Ensure lowercase
+            };
+            console.log("Submitting verification data:", dataToSubmit);
+
+            const response = await submitVerificationRequest(dataToSubmit);
 
             if (response.success) {
                 router.push("/user/under-review");
@@ -39,6 +46,7 @@ export default function VerificationForm() {
                 alert(response.message || "Failed to submit verification request");
             }
         } catch (error) {
+            console.error("Error submitting verification:", error);
             alert("Error submitting verification request");
         }
     };
@@ -135,7 +143,7 @@ export default function VerificationForm() {
                         <input
                             type="text"
                             name="walletAddress"
-                            value={formData.walletAddress}
+                            value={formData.walletAddress.toLowerCase()}
                             onChange={handleChange}
                             placeholder="Wallet Address"
                             className="mt-1 p-2 w-full rounded border"

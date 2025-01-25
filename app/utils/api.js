@@ -25,6 +25,7 @@ export const checkUserRole = async (walletAddress) => {
 };
 
 export const submitVerificationRequest = async (data) => {
+    console.log("Submitting verification request with data:", data);
     const response = await fetch("/api/verification/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -34,11 +35,14 @@ export const submitVerificationRequest = async (data) => {
     console.log("Response status from submitVerificationRequest:", response.status);
 
     if (!response.ok) {
-        console.log("Response text:", await response.text());
+        const errorText = await response.text();
+        console.error("Error response:", errorText);
         throw new Error("API request failed");
     }
 
-    return response.json();
+    const result = await response.json();
+    console.log("Verification request submission result:", result);
+    return result;
 };
 
 export const updateVerificationStatus = async (id, status) => {
