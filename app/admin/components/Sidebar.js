@@ -53,6 +53,13 @@ export const Sidebar = () => {
           >
             AI Management
           </a>
+          {/* Verification Requests */}
+          <a
+            href="/admin/verificationRequests"
+            className="block px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white rounded"
+          >
+            Verification Requests
+          </a>
         </nav>
       </aside>
     );

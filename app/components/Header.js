@@ -1,12 +1,166 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { FaSearch, FaUser, FaShoppingBag, FaBars, FaTimes } from "react-icons/fa";
+import { checkUserRole } from "../utils/api";
+import { useRouter } from "next/navigation";
 
 export const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [walletAddress, setWalletAddress] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const [isConnected, setIsConnected] = useState(false);
+
+  useEffect(() => {
+    const checkWalletConnection = async () => {
+      if (window.ethereum) {
+        try {
+          const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+          if (accounts.length > 0) {
+            setWalletAddress(accounts[0]);
+            setIsConnected(true);
+            await handleRoleCheck(accounts[0]);
+          }
+        } catch (err) {
+          console.error("Error checking wallet connection:", err);
+        }
+      }
+    };
+
+    checkWalletConnection();
+
+    if (window.ethereum) {
+      window.ethereum.on('accountsChanged', handleAccountsChanged);
+      window.ethereum.on('disconnect', handleDisconnect);
+    }
+
+    return () => {
+      if (window.ethereum) {
+        window.ethereum.removeListener('accountsChanged', handleAccountsChanged);
+        window.ethereum.removeListener('disconnect', handleDisconnect);
+      }
+    };
+  }, []);
+
+  const handleAccountsChanged = async (accounts) => {
+    if (accounts.length === 0) {
+      handleDisconnect();
+    } else {
+      setWalletAddress(accounts[0]);
+      setIsConnected(true);
+      await handleRoleCheck(accounts[0]);
+    }
+  };
+
+  const handleDisconnect = () => {
+    setWalletAddress(null);
+    setIsConnected(false);
+    router.push('/');
+    alert("Wallet disconnected. Please manually remove the wallet connection from your metamask extension in the browser.");
+  };
+
+  const toggleWalletConnection = async () => {
+    if (isConnected) {
+      handleDisconnect();
+    } else {
+      await connectWallet();
+    }
+  };
+
+  const connectWallet = async () => {
+    if (!window.ethereum) {
+      setError("MetaMask not installed. Please install MetaMask to proceed.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+      const address = accounts[0];
+      setWalletAddress(address);
+      setIsConnected(true);
+      await handleRoleCheck(address);
+    } catch (err) {
+      if (err.code === 4001) { // User rejected the request
+        alert("Connection request denied by user.");
+        setError("Connection request denied by user.");
+      } else {
+        console.error("Error in wallet connection:", err);
+        setError("Failed to connect wallet. Please try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRoleCheck = async (address) => {
+    try {
+      const response = await checkUserRole(address.toLowerCase());
+      const { role, status } = response;
+
+      console.log("User role check:", { role, status });
+
+      console.log(address, )
+
+      // First check if it's admin
+      if (address === "0x4d5b0Ac9C4148932bd10a28B1E0a064f51f390D4".toLowerCase()) {
+        router.push("/admin");
+        return;
+      }
+
+      // Handle different status cases
+      switch (status) {
+        case "verified":
+          // Route to appropriate dashboard based on role
+          switch (role.toLowerCase()) {
+            case "admin":
+              router.push("/admin");
+              break;
+            case "doctor":
+              router.push("/DoctorPanel");
+              break;
+            case "hospital":
+              router.push("/HospitalPanel");
+              break;
+            case "patient":
+              router.push("/PatientPanel");
+              break;
+            default:
+              router.push("/user/verification");
+          }
+          break;
+
+        case "pending":
+          router.push("/user/under-review");
+          break;
+
+        case "not_verified":
+          switch (role.toLowerCase()) {
+            case "none":
+              console.log("coming here ??")
+              alert("The user has been marked as not verified. Please fill the verification Form again!")
+          }
+          router.push("/user/verification");
+          break;
+
+        case "new":
+          router.push("/user/verification");
+          break;
+
+        default:
+          console.log("Or here ??")
+          router.push("/user/verification");
+      }
+    } catch (err) {
+      console.error("Error in handleRoleCheck:", err);
+      setError("Unable to check user role. Try again later.");
+      router.push("/user/verification");
+    }
+  };
 
   const navItems = [
     { name: "Home", link: "/" },
@@ -74,14 +228,23 @@ export const Header = () => {
       </nav>
 
       {/* Action Icons and Mobile Hamburger Icon */}
+
+
       <div className="flex items-center space-x-3 md:space-x-4 lg:space-x-5 text-white">
         <FaSearch className="text-base md:text-lg lg:text-xl hover:text-gray-300 cursor-pointer" />
-        
-        {/* Link to Login Page */}
-        <Link href="/user/login" passHref>
-          <FaUser className="text-base md:text-lg lg:text-xl hover:text-gray-300 cursor-pointer" />
-        </Link>
-        
+        {/* Wallet Connect */}
+        <div
+          className="flex items-center cursor-pointer space-x-2"
+          onClick={toggleWalletConnection}
+        >
+          <FaUser className="text-base md:text-lg lg:text-xl hover:text-gray-300" />
+          <span className="hidden md:block">
+            {loading ? "Connecting..." :
+              isConnected && walletAddress
+                ? `Disconnect: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+                : "Connect Wallet"}
+          </span>
+        </div>
         <FaShoppingBag className="text-base md:text-lg lg:text-xl hover:text-gray-300 cursor-pointer" />
         <div
           className="text-base md:text-lg lg:text-xl hover:text-gray-300 cursor-pointer md:hidden"
