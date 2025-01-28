@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { submitVerificationRequest } from "@/app/utils/api";
+import Link from "next/link";
 
 export default function VerificationForm() {
     const [formData, setFormData] = useState({
@@ -179,6 +180,9 @@ export default function VerificationForm() {
                     >
                         Submit for Verification
                     </button>
+                    <div className="flex items-center justify-center text-black">
+                        <p>Don't want to get verified now?&nbsp;<span className="text-blue-600"><u><Link href={"/"}>Explore CVH!</Link></u></span></p>
+                    </div>
                 </form>
             </div>
         </div>

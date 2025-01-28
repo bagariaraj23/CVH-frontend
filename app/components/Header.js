@@ -106,8 +106,7 @@ export const Header = () => {
 
       console.log("User role check:", { role, status });
 
-      console.log(address, )
-
+      console.log(address, role, status);
       // First check if it's admin
       if (address === "0x4d5b0Ac9C4148932bd10a28B1E0a064f51f390D4".toLowerCase()) {
         router.push("/admin");
@@ -143,7 +142,6 @@ export const Header = () => {
         case "not_verified":
           switch (role.toLowerCase()) {
             case "none":
-              console.log("coming here ??")
               alert("The user has been marked as not verified. Please fill the verification Form again!")
           }
           router.push("/user/verification");
@@ -167,7 +165,6 @@ export const Header = () => {
   const navItems = [
     { name: "Home", link: "/" },
     { name: "AI Doctor", link: "/user/AiDoctor" },
-    // { name: "Symptom Checker", link: "/user/SymptomChecker" },
     { name: "Consult a Specialist", link: "/user/consultSpecialist" },
     { name: "Patient Portal", link: "/user/patientPortal" },
     { name: "Testimonials", link: "/user/testimonials" },
