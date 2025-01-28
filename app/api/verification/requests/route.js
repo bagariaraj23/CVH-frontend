@@ -21,30 +21,6 @@ export async function GET(req) {
     }
 }
 
-// export async function POST(req) {
-//     const { walletAddress } = await req.json();
-//     // console.log("Wallet address:", walletAddress);
-//     try {
-//         const request = await prisma.verificationRequest.findFirst({
-//             where: { walletAddress },
-//         });
-
-//         console.log(request);
-
-//         if (!request) {
-//             return new Response(
-//                 JSON.stringify({ status: "no_request", message: "No verification request found." }),
-//                 { status: 404 }
-//             );
-//         }
-
-//         return new Response(JSON.stringify(request), { status: 200 });
-//     } catch (error) {
-//         console.error("Error checking verification status:", error);
-//         return new Response(JSON.stringify({ error: "Internal server error." }), { status: 500 });
-//     }
-// }
-
 export async function POST(req) {
     const { walletAddress } = await req.json();
 

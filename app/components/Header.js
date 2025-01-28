@@ -26,6 +26,7 @@ export const Header = () => {
             await handleRoleCheck(accounts[0]);
           }
         } catch (err) {
+          alert("Error checking wallet connection. Please try again.");
           console.error("Error checking wallet connection:", err);
         }
       }
@@ -73,6 +74,7 @@ export const Header = () => {
 
   const connectWallet = async () => {
     if (!window.ethereum) {
+      alert("MetaMask not installed. Please install MetaMask to proceed.");
       setError("MetaMask not installed. Please install MetaMask to proceed.");
       return;
     }
