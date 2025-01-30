@@ -20,6 +20,10 @@ export function useWallet() {
                     await checkPremiumStatus(accounts[0]);
                 }
             } catch (error) {
+                toast.error('Error checking wallet connection: ' + error.message, {
+                    position: 'top-right',
+                    autoClose: 5000
+                });
                 console.error('Error checking wallet connection:', error);
             }
         }
@@ -35,29 +39,35 @@ export function useWallet() {
             const data = await response.json();
             setIsPremium(data.isPremium);
         } catch (error) {
+            toast.error('Error checking premium status: ' + error.message, {
+                position: 'top-right',
+                autoClose: 5000
+            });
             console.error('Error checking premium status:', error);
         }
     };
 
     const connectWallet = async () => {
-        if (!window.ethereum) {
-            toast.error('Please install MetaMask to use this feature', {
-                position: "top-right",
+        if (!(typeof window !== 'undefined' && window.ethereum)) {
+            toast.error('Please install MetaMask to use this feature.', {
+                position: 'top-right',
                 autoClose: 5000
             });
             return;
         }
 
         try {
+            // Request user to connect a wallet
             const accounts = await window.ethereum.request({
                 method: 'eth_requestAccounts'
             });
-            setWalletAddress(accounts[0]);
+            const address = accounts[0];
+            setWalletAddress(address);
             setIsConnected(true);
-            await checkPremiumStatus(accounts[0]);
+            await checkPremiumStatus(address);
         } catch (error) {
             toast.error('Error connecting wallet: ' + error.message, {
-                position: "top-right",
+                position: 'top-right',
                 autoClose: 5000
             });
         }

@@ -8,6 +8,12 @@ import { CustomToastContainer, showError } from '@/app/components/ErrorNotificat
 import ErrorBoundary from '@/app/components/ErrorBoundary';
 import { toast } from 'react-toastify';
 
+/**
+ * ChatInterface supports:
+ *  - mode = "text": user types, AI answers in text only
+ *  - mode = "speech-to-text": user speaks, AI answers in text only
+ *  - mode = "speech-to-speech": user speaks, AI answers in TTS
+ */
 export default function ChatInterface({ mode = 'text' }) {
     const [messages, setMessages] = useState([
         {
@@ -20,10 +26,10 @@ export default function ChatInterface({ mode = 'text' }) {
     const [isLoading, setIsLoading] = useState(false);
 
     // If mode is not 'text', we consider it premium for example
-    const [isPremiumFeature] = useState(mode !== 'text');
+    const isPremiumFeature = mode !== 'text';
 
     // From your wallet hook (uncomment or adapt if needed)
-    const { isConnected, isPremium, connectWallet } = useWallet();
+    const { isConnected, isPremium, connectWallet, walletAddress } = useWallet();
 
     // Refs
     const mediaRecorder = useRef(null);
@@ -111,7 +117,10 @@ export default function ChatInterface({ mode = 'text' }) {
         try {
             const response = await fetch('/api/openai/chat', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'wallet-address': walletAddress || '',
+                },
                 body: JSON.stringify({ message: input })
             });
 
@@ -242,6 +251,9 @@ export default function ChatInterface({ mode = 'text' }) {
         try {
             const response = await fetch('/api/openai/speech', {
                 method: 'POST',
+                headers: {
+                    'wallet-address': walletAddress || ''
+                },
                 body: formData
             });
 
@@ -310,6 +322,9 @@ export default function ChatInterface({ mode = 'text' }) {
 
     /**
      * Interrupt TTS if playing and start listening (or stop if we are already recording).
+     * Toggle push-to-talk:
+     *  - If not recording, check gating logic, then start
+     *  - If recording, stop
      */
     const handleContinuousSpeechToggle = async () => {
         // If we are currently recording, user wants to stop
@@ -323,17 +338,37 @@ export default function ChatInterface({ mode = 'text' }) {
             ttsAudioRef.current.pause();
             ttsAudioRef.current.currentTime = 0; // reset
         }
-
+        
         // Uncomment these checks if you need premium/wallet gating:
-
         if (!isConnected) {
-            toast.info('You need to connect your wallet to use voice features.', {
-                position: 'top-right',
-                autoClose: 5000,
-                onClick: async () => {
-                    await connectWallet();
+            toast.error("Metamask not connected!")
+            toast.info(
+                <div>
+                    You need to connect your wallet to use voice features.{' '}
+                    <span
+                        style={{
+                            fontWeight: 'bold',
+                            textDecoration: 'underline',
+                            color: '#007bff',
+                            cursor: 'pointer'
+                        }}
+                        onClick={async (e) => {
+                            // Prevent the click from triggering the toast's default onClick (if any)
+                            e.stopPropagation();
+                            await connectWallet();
+                        }}
+                    >
+                        Click here
+                    </span>{' '}
+                    to Connect to Metamask
+                </div>,
+                {
+                    position: 'top-right',
+                    autoClose: 5000
+                    // No "onClick" at the toast level, since we only want the link clickable
                 }
-            });
+            );
+
             return;
         }
 
@@ -360,7 +395,7 @@ export default function ChatInterface({ mode = 'text' }) {
     };
 
     return (
-        <ErrorBoundary>
+        <>
             <div className="flex flex-col h-[400px] w-full bg-white rounded-lg shadow-xl">
                 {/* Messages Area */}
                 <div
@@ -410,7 +445,7 @@ export default function ChatInterface({ mode = 'text' }) {
                 {/* Input Area */}
                 <div className="border-t p-4 bg-white">
                     {/* Example premium message if needed */}
-                    {isPremiumFeature && !isPremium && (
+                    {mode !== 'text' && isPremiumFeature && !isPremium && !isConnected && (
                         <div className="flex items-center justify-center mb-4 text-sm text-gray-600">
                             <FaLock className="mr-2" />
                             This feature requires a premium subscription
@@ -469,6 +504,6 @@ export default function ChatInterface({ mode = 'text' }) {
                     </div>
                 </div>
             </div>
-        </ErrorBoundary>
+        </>
     );
 }
