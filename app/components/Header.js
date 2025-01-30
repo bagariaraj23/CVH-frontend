@@ -27,6 +27,7 @@ export const Header = () => {
             await handleRoleCheck(accounts[0]);
           }
         } catch (err) {
+          alert("Error checking wallet connection. Please try again.");
           console.error("Error checking wallet connection:", err);
         }
       }
@@ -110,10 +111,17 @@ export const Header = () => {
 
   const handleRoleCheck = async (address) => {
     try {
-      const response = await checkUserRole(address);
+      const response = await checkUserRole(address.toLowerCase());
       const { role, status } = response;
 
       console.log("User role check:", { role, status });
+
+      console.log(address, role, status);
+      // First check if it's admin
+      if (address === "0x4d5b0Ac9C4148932bd10a28B1E0a064f51f390D4".toLowerCase()) {
+        router.push("/admin");
+        return;
+      }
 
       // Handle different status cases
       switch (status) {
@@ -144,7 +152,6 @@ export const Header = () => {
         case "not_verified":
           switch (role.toLowerCase()) {
             case "none":
-              console.log("coming here ??")
               toast.warning("The user has been marked as not verified. Please fill the verification Form again!", {
                 position: "top-right",
                 autoClose: 5000
@@ -171,7 +178,6 @@ export const Header = () => {
   const navItems = [
     { name: "Home", link: "/" },
     { name: "AI Doctor", link: "/user/AiDoctor" },
-    // { name: "Symptom Checker", link: "/user/SymptomChecker" },
     { name: "Consult a Specialist", link: "/user/consultSpecialist" },
     { name: "Patient Portal", link: "/user/patientPortal" },
     { name: "Testimonials", link: "/user/testimonials" },

@@ -7,11 +7,14 @@ const prisma = new PrismaClient();
 export async function POST(request) {
     try {
         const data = await request.json();
-        const { walletAddress, role, details, name, specialization, licenseNumber, address, registrationId } = data;
+        // Ensure wallet address is lowercase
+        data.walletAddress = data.walletAddress.toLowerCase();
+
+        console.log("Received verification request data:", data);
 
         // Check if a verification request already exists
         const existingRequest = await prisma.verificationRequest.findFirst({
-            where: { walletAddress }
+            where: { walletAddress: data.walletAddress }
         });
 
         // If request exists and status isn't 'not_verified', return error
@@ -24,62 +27,66 @@ export async function POST(request) {
 
         // Create or update user
         const user = await prisma.user.upsert({
-            where: { walletAddress },
+            where: { walletAddress: data.walletAddress },
             update: {
-                role,
+                role: data.role,
                 status: 'pending',
-                details
+                details: data.details
             },
             create: {
-                walletAddress,
-                role,
+                walletAddress: data.walletAddress,
+                role: data.role,
                 status: 'pending',
-                details
+                details: data.details
             }
         });
+        console.log("User created/updated:", user);
 
         // Create or update verification request
         const verificationRequest = existingRequest
             ? await prisma.verificationRequest.update({
                 where: { id: existingRequest.id },
                 data: {
-                    role,
-                    details,
+                    role: data.role,
+                    details: data.details,
                     status: 'pending',
-                    name,
-                    specialization,
-                    licenseNumber,
-                    address,
-                    registrationId,
+                    name: data.name,
+                    specialization: data.specialization,
+                    licenseNumber: data.licenseNumber,
+                    address: data.address,
+                    registrationId: data.registrationId,
                     premiumUser: false,
                     userId: user.id
                 }
             })
             : await prisma.verificationRequest.create({
                 data: {
-                    walletAddress,
-                    role,
-                    details,
-                    name,
-                    specialization,
-                    licenseNumber,
-                    address,
-                    registrationId,
+                    walletAddress: data.walletAddress,
+                    role: data.role,
+                    details: data.details,
+                    name: data.name,
+                    specialization: data.specialization,
+                    licenseNumber: data.licenseNumber,
+                    address: data.address,
+                    registrationId: data.registrationId,
                     premiumUser: false,
                     userId: user.id
                 }
             });
+        console.log("Verification request created/updated:", verificationRequest);
 
         return NextResponse.json({
             success: true,
-            message: "Verification request submitted successfully"
+            message: "Verification request submitted successfully",
+            request: verificationRequest
         });
 
     } catch (error) {
         console.error('Error submitting verification request:', error);
         return NextResponse.json({
             success: false,
-            message: "Failed to submit verification request"
+            message: "Failed to submit verification request",
+            error: error.message
         }, { status: 500 });
     }
 }

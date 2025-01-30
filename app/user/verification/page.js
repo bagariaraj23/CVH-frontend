@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { submitVerificationRequest } from "@/app/utils/api";
 import { toast } from 'react-toastify';
+import Link from "next/link";
 
 export default function VerificationForm() {
     const [formData, setFormData] = useState({
@@ -30,9 +31,16 @@ export default function VerificationForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        console.log(formData);
 
         try {
-            const response = await submitVerificationRequest(formData);
+            const dataToSubmit = {
+                ...formData,
+                walletAddress: formData.walletAddress.toLowerCase() // Ensure lowercase
+            };
+            console.log("Submitting verification data:", dataToSubmit);
+
+            const response = await submitVerificationRequest(dataToSubmit);
 
             if (response.success) {
                 router.push("/user/under-review");
@@ -47,6 +55,8 @@ export default function VerificationForm() {
                 position: "top-right",
                 autoClose: 5000
             });
+            console.error("Error submitting verification:", error);
+
         }
     };
 
@@ -142,7 +152,7 @@ export default function VerificationForm() {
                         <input
                             type="text"
                             name="walletAddress"
-                            value={formData.walletAddress}
+                            value={formData.walletAddress.toLowerCase()}
                             onChange={handleChange}
                             placeholder="Wallet Address"
                             className="mt-1 p-2 w-full rounded border"
@@ -178,6 +188,9 @@ export default function VerificationForm() {
                     >
                         Submit for Verification
                     </button>
+                    <div className="flex items-center justify-center text-black">
+                        <p>Don't want to get verified now?&nbsp;<span className="text-blue-600"><u><Link href={"/"}>Explore CVH!</Link></u></span></p>
+                    </div>
                 </form>
             </div>
         </div>

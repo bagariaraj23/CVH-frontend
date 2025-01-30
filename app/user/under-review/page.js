@@ -11,6 +11,7 @@ export default function UnderReview() {
 
     const connectWallet = async () => {
         if (!window.ethereum) {
+            alert("MetaMask not installed. Please install MetaMask to proceed.");
             setError("MetaMask not installed. Please install MetaMask to proceed.");
             return;
         }
@@ -24,6 +25,7 @@ export default function UnderReview() {
             // console.log("Connected wallet address:", address);
             await verifyStatus(address);
         } catch (err) {
+            alert("Failed to connect wallet. Please try again.");
             setError("Failed to connect wallet. Please try again.");
         } finally {
             setLoading(false);
