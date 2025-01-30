@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { openai, MEDICAL_SYSTEM_PROMPT } from '@/app/utils/openai-config';
-import { writeFile, unlink } from 'fs/promises';
+import { writeFile, mkdir, unlink } from 'fs/promises';
 import { join } from 'path';
 import { checkPremiumAccess } from '@/app/utils/auth';
 import fs from 'fs';
 
+const TMP_DIR = join(process.cwd(), 'tmp');
 const STRUCTURED_PROMPT = `
 You are an AI medical assistant. Analyze the patient's symptoms and provide a structured response with the following sections:
 1. Symptoms Analysis: List and analyze the reported symptoms
@@ -22,15 +23,15 @@ Keep the response clear and conversational but professional.
 export async function POST(request) {
     try {
         // Check premium access
-        // const walletAddress = request.headers.get('wallet-address');
-        // if (!walletAddress) {
-        //     return NextResponse.json({ error: 'Wallet address required' }, { status: 401 });
-        // }
+        const walletAddress = request.headers.get('wallet-address');
+        if (!walletAddress) {
+            return NextResponse.json({ error: 'Wallet address required' }, { status: 401 });
+        }
 
-        // const hasAccess = await checkPremiumAccess(walletAddress);
-        // if (!hasAccess) {
-        //     return NextResponse.json({ error: 'Premium subscription required' }, { status: 403 });
-        // }
+        const hasAccess = await checkPremiumAccess(walletAddress);
+        if (!hasAccess) {
+            return NextResponse.json({ error: 'Premium subscription required' }, { status: 403 });
+        }
 
         const formData = await request.formData();
         const audioFile = formData.get('audio');
@@ -41,54 +42,39 @@ export async function POST(request) {
             return NextResponse.json({ error: 'No audio file provided' }, { status: 400 });
         }
 
-        // Save audio file temporarily
+        // Ensure the tmp directory exists
+        await mkdir(TMP_DIR, { recursive: true });
+
         const bytes = await audioFile.arrayBuffer();
         const buffer = Buffer.from(bytes);
-        const tempPath = join(process.cwd(), 'tmp', `${Date.now()}.wav`);
+        const tempPath = join(TMP_DIR, `${Date.now()}.wav`);
         await writeFile(tempPath, buffer);
 
         try {
-            // Transcribe audio
             const transcription = await openai.audio.transcriptions.create({
                 file: fs.createReadStream(tempPath),
                 model: "whisper-1",
             });
 
-            // Structure the response based on whether it's a follow-up question
             const messages = [
-                {
-                    role: "system",
-                    content: isFollowUp ? MEDICAL_SYSTEM_PROMPT : STRUCTURED_PROMPT
-                },
-                {
-                    role: "user",
-                    content: transcription.text
-                }
+                { role: "system", content: isFollowUp ? MEDICAL_SYSTEM_PROMPT : STRUCTURED_PROMPT },
+                { role: "user", content: transcription.text }
             ];
 
-            // Get AI response
             const completion = await openai.chat.completions.create({
                 model: "gpt-4",
                 messages,
                 temperature: 0.7,
-                max_tokens: isFollowUp ? 200 : 800, // Shorter responses for follow-ups
+                max_tokens: isFollowUp ? 200 : 800,
             });
 
-            const response = completion.choices[0].message.content;
+            const response = completion.choices[0]?.message?.content || 'No response available';
 
-            // For speech-to-speech, create a more concise version for audio
-            let audioResponse = response;
             if (mode === 'speech-to-speech') {
-                // If it's a structured response, extract key points for speech
-                if (!isFollowUp) {
-                    const sections = response.split('\n\n');
-                    audioResponse = sections
-                        .map(section => {
-                            // Remove markdown formatting and section titles
-                            return section.replace(/^[#*-]\s*|^\d\.\s*/gm, '');
-                        })
-                        .join(' ');
-                }
+                const sections = response.split('\n\n');
+                const audioResponse = sections
+                    .map(section => section.replace(/^[#*-]\s*|^\d\.\s*/gm, ''))
+                    .join(' ');
 
                 const speechResponse = await openai.audio.speech.create({
                     model: "tts-1",
@@ -103,25 +89,20 @@ export async function POST(request) {
                 return NextResponse.json({
                     transcription: transcription.text,
                     response,
-                    audioResponse, // The simplified version used for speech
+                    audioResponse,
                     audioUrl
                 });
             }
 
-            return NextResponse.json({
-                transcription: transcription.text,
-                response
-            });
-
+            return NextResponse.json({ transcription: transcription.text, response });
         } finally {
-            // Clean up temp file
-            await unlink(tempPath).catch(console.error);
+            await unlink(tempPath).catch(err => console.error('Failed to clean up temp file:', err));
         }
     } catch (error) {
         console.error('Speech API Error:', error);
-        return NextResponse.json({
-            error: 'Failed to process speech request',
-            details: error.message
-        }, { status: 500 });
+        return NextResponse.json(
+            { error: 'Failed to process speech request', details: error.message },
+            { status: 500 }
+        );
     }
-} 
+}

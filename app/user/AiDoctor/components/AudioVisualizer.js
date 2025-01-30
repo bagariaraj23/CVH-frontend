@@ -80,11 +80,13 @@ export default function AudioVisualizer({ isRecording }) {
     };
 
     return (
-        <canvas
-            ref={canvasRef}
-            width="300"
-            height="60"
-            className="rounded-lg bg-[#12104A]"
-        />
+        <>
+            <canvas
+                ref={canvasRef}
+                width="300"
+                height="60"
+                className="rounded-lg bg-[#12104A]"
+            />
+        </>
     );
 } 
