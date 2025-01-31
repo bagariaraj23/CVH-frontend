@@ -1,4 +1,8 @@
 import "./globals.css";
+import ErrorBoundary from './components/ErrorBoundary';
+import { CustomToastContainer } from './components/ErrorNotification';
+import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer } from "react-toastify";
 
 export default function RootLayout({ children }) {
   const navItems = [
@@ -17,7 +21,11 @@ export default function RootLayout({ children }) {
         <title>CareValue Health</title>
       </head>
       <body>
-        <main>{children}</main>
+        <ErrorBoundary>
+          <main>{children}</main>
+          <ToastContainer />
+        </ErrorBoundary>
+        <CustomToastContainer />
       </body>
     </html>
   );

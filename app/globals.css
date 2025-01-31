@@ -22,3 +22,22 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Custom styles for error toasts */
+.error-toast {
+    background-color: #FEF2F2 !important;
+    color: #991B1B !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+.error-toast .Toastify__close-button {
+    color: #991B1B !important;
+}
+
+.error-toast ul {
+    margin-top: 0.5rem;
+}
+
+.error-toast li {
+    margin-bottom: 0.25rem;
+}

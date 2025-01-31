@@ -5,6 +5,7 @@ import Image from "next/image";
 import { FaSearch, FaUser, FaShoppingBag, FaBars, FaTimes } from "react-icons/fa";
 import { checkUserRole } from "../utils/api";
 import { useRouter } from "next/navigation";
+import { toast } from 'react-toastify';
 
 export const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -61,7 +62,10 @@ export const Header = () => {
     setWalletAddress(null);
     setIsConnected(false);
     router.push('/');
-    alert("Wallet disconnected. Please manually remove the wallet connection from your metamask extension in the browser.");
+    toast.info("Wallet disconnected. Please manually remove the wallet connection from your metamask extension in the browser.", {
+      position: "top-right",
+      autoClose: 5000
+    });
   };
 
   const toggleWalletConnection = async () => {
@@ -74,8 +78,10 @@ export const Header = () => {
 
   const connectWallet = async () => {
     if (!window.ethereum) {
-      alert("MetaMask not installed. Please install MetaMask to proceed.");
-      setError("MetaMask not installed. Please install MetaMask to proceed.");
+      toast.error("MetaMask not installed. Please install MetaMask to proceed.", {
+        position: "top-right",
+        autoClose: 5000
+      });
       return;
     }
 
@@ -87,12 +93,16 @@ export const Header = () => {
       setIsConnected(true);
       await handleRoleCheck(address);
     } catch (err) {
-      if (err.code === 4001) { // User rejected the request
-        alert("Connection request denied by user.");
-        setError("Connection request denied by user.");
+      if (err.code === 4001) {
+        toast.error("Connection request denied by user.", {
+          position: "top-right",
+          autoClose: 5000
+        });
       } else {
-        console.error("Error in wallet connection:", err);
-        setError("Failed to connect wallet. Please try again.");
+        toast.error("Failed to connect wallet. Please try again.", {
+          position: "top-right",
+          autoClose: 5000
+        });
       }
     } finally {
       setLoading(false);
@@ -142,7 +152,10 @@ export const Header = () => {
         case "not_verified":
           switch (role.toLowerCase()) {
             case "none":
-              alert("The user has been marked as not verified. Please fill the verification Form again!")
+              toast.warning("The user has been marked as not verified. Please fill the verification Form again!", {
+                position: "top-right",
+                autoClose: 5000
+              });
           }
           router.push("/user/verification");
           break;

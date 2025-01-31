@@ -63,14 +63,14 @@ model Hospital {
 
 // Patient table for storing patient information
 model Patient {
-  id            String   @id // Foreign key from User table
-  user          User     @relation(fields: [id], references: [id])
-  walletAddress String?  @unique
-  name          String
-  premiumUser   Boolean  @default(false)
-  details       String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                  String               @id // Foreign key from User table
+  user                User                 @relation(fields: [id], references: [id])
+  walletAddress       String?              @unique
+  name                String
+  premiumSubscription PremiumSubscription?
+  details             String?
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
 }
 
 // Verification request table for admin verification of doctors and hospitals
@@ -82,7 +82,7 @@ model VerificationRequest {
   role          Role    @default(PATIENT)
   details       String? // Additional details from the verification form
   status        Status  @default(pending)
-  
+
   // Doctor-specific fields
   licenseNumber  String?
   specialization String?
@@ -125,4 +125,18 @@ model Appointment {
   doctorId  String
   timeSlot  DateTime
   status    String // 'Pending', 'Confirmed'
+}
+
+// Premium subscription details
+model PremiumSubscription {
+  id               String   @id @default(uuid())
+  patientId        String   @unique
+  patient          Patient  @relation(fields: [patientId], references: [id])
+  startDate        DateTime @default(now())
+  endDate          DateTime
+  subscriptionType String // 'monthly', 'yearly'
+  features         String[] // Array of enabled features
+  active           Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }

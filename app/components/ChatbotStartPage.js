@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Image from "next/image";
+import { toast } from 'react-toastify';
 
 const ChatbotStartPage = () => {
   const [age, setAge] = useState("");
@@ -12,9 +13,15 @@ const ChatbotStartPage = () => {
 
   const handleStartChat = () => {
     if (age && gender) {
-      alert(`Starting chat for a ${age}-year-old ${gender}`);
+      toast.success(`Starting chat for a ${age}-year-old ${gender}`, {
+        position: "top-right",
+        autoClose: 3000
+      });
     } else {
-      alert("Please enter your age and select your gender to get started.");
+      toast.error("Please enter your age and select your gender to get started.", {
+        position: "top-right",
+        autoClose: 5000
+      });
     }
   };
 
@@ -57,17 +64,15 @@ const ChatbotStartPage = () => {
             className="w-24 border border-gray-300 rounded-lg p-2 text-center outline-none focus:ring focus:ring-blue-200"
           />
           <button
-            className={`py-2 px-4 rounded-lg transition-all duration-300 ${
-              gender === "Female" ? "bg-[#b39ddb] text-black" : "bg-gray-200 text-gray-700"
-            }`}
+            className={`py-2 px-4 rounded-lg transition-all duration-300 ${gender === "Female" ? "bg-[#b39ddb] text-black" : "bg-gray-200 text-gray-700"
+              }`}
             onClick={() => handleGenderChange("Female")}
           >
             Female
           </button>
           <button
-            className={`py-2 px-4 rounded-lg transition-all duration-300 ${
-              gender === "Male" ? "bg-[#b39ddb] text-black" : "bg-gray-200 text-gray-700"
-            }`}
+            className={`py-2 px-4 rounded-lg transition-all duration-300 ${gender === "Male" ? "bg-[#b39ddb] text-black" : "bg-gray-200 text-gray-700"
+              }`}
             onClick={() => handleGenderChange("Male")}
           >
             Male

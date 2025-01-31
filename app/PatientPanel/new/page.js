@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { CalendarIcon, ClockIcon } from '@heroicons/react/outline';
 import { useRouter } from 'next/navigation';
+import { toast } from 'react-toastify';
 
 export default function ScheduleAppointmentPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,7 +44,10 @@ export default function ScheduleAppointmentPage() {
   const handleScheduleAppointment = (e) => {
     e.preventDefault();
     if (!appointmentDate || !appointmentTime) {
-      alert('Please select a date and time.');
+      toast.error('Please select a date and time.', {
+        position: "top-right",
+        autoClose: 5000
+      });
       return;
     }
 
@@ -57,8 +61,12 @@ export default function ScheduleAppointmentPage() {
       status: 'Upcoming',
     };
 
-    alert(
-      `Appointment Scheduled:\nDoctor: ${newAppointment.doctor}\nDate: ${newAppointment.date}\nTime: ${newAppointment.time}`
+    toast.success(
+      `Appointment Scheduled:\nDoctor: ${newAppointment.doctor}\nDate: ${newAppointment.date}\nTime: ${newAppointment.time}`,
+      {
+        position: "top-right",
+        autoClose: 5000
+      }
     );
 
     setIsModalOpen(false);
