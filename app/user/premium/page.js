@@ -21,7 +21,7 @@ const PremiumPage = () => {
     });
 
     const router = useRouter();
-    const publicKey = process.env.PAYSTACK_PUBLIC_KEY; // Replace with your Paystack public key
+    const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY; // Replace with your Paystack public key
 
     // 5000 kobo = 50 NGN, or 500,000 kobo = 5000 NGN. Adjust as needed.
     const amount = 5000;
@@ -179,13 +179,13 @@ const PremiumPage = () => {
                         </div>
                     </div>
 
-                    {/* We first submit the form (handleSubmit) to show toast, etc. Then user can click Paystack button */}
+                    {/* We first submit the form (handleSubmit) to show toast, etc. Then user can click Paystack button
                     <button
                         type="submit"
                         className="w-full bg-gray-500 hover:bg-gray-600 text-white font-medium py-3 rounded-lg shadow-lg transition duration-300"
                     >
                         Submit Details
-                    </button>
+                    </button> */}
 
                     {/* Paystack Button */}
                     <PaystackButton

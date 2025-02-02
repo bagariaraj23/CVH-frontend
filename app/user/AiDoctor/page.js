@@ -1,10 +1,12 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import ChatInterface from "./components/ChatInterface";
-import { FaKeyboard, FaMicrophone, FaHeadset } from "react-icons/fa";
+import { FaKeyboard, FaMicrophone, FaHeadset, FaCrown } from "react-icons/fa";
 
 export default function AiDoctor() {
   const [selectedMode, setSelectedMode] = useState('text');
+  const router = useRouter();
 
   const modes = [
     { id: 'text', icon: FaKeyboard, label: 'Text Chat', description: 'Free text-based chat' },
@@ -17,9 +19,19 @@ export default function AiDoctor() {
       <div className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
         {/* Header Section */}
         <div className="bg-white shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 py-6">
-            <h1 className="text-3xl font-bold text-gray-900">AI Health Assistant</h1>
-            <p className="mt-2 text-gray-600">Get instant medical guidance and symptom analysis</p>
+          <div className="max-w-7xl mx-auto px-4 py-6 flex justify-between items-center">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">AI Health Assistant</h1>
+              <p className="mt-2 text-gray-600">Get instant medical guidance and symptom analysis</p>
+            </div>
+
+            <button
+              onClick={() => router.push("/user/premium")}
+              className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all shadow-md"
+            >
+              <FaCrown className="text-xl" />
+              <span>Upgrade to Premium</span>
+            </button>
           </div>
         </div>
 
