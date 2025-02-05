@@ -23,8 +23,16 @@ const PremiumPage = () => {
     const router = useRouter();
     const publicKey = process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY; // Replace with your Paystack public key
 
-    // 5000 kobo = 50 NGN, or 500,000 kobo = 5000 NGN. Adjust as needed.
-    const amount = 5000;
+
+    // If you're charging in USD, confirm your Paystack account supports USD.
+    // Paystack uses "amount" in the smallest currency unit (like kobo in NGN).
+    // For $9.99 in USD, that typically means 9.99 * 100 = 999 (cents).
+    // If your Paystack account is in NGN, you'd have to convert $9.99 => Naira => kobo.
+    // For illustration, assume you can do $9.99 => 999 cents:
+    const amountInCents = 999; 
+    const amountInKobo = 1496200;
+    // // 5000 kobo = 50 NGN, or 500,000 kobo = 5000 NGN. Adjust as needed.
+    // const amount = 9.99;
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -43,11 +51,14 @@ const PremiumPage = () => {
             const res = await fetch("/api/premium/activate", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*" 
                 },
                 body: JSON.stringify({
-                    walletAddress: formData.walletAddress,
+                    name: formData.name,
                     email: formData.email,
+                    password: formData.password, // If you plan to store it
+                    walletAddress: formData.walletAddress,
                     reference: reference.reference
                 })
             });
@@ -71,7 +82,7 @@ const PremiumPage = () => {
 
     const componentProps = {
         email: formData.email,
-        amount,
+        amount: amountInKobo,
         metadata: {
             name: formData.name,
             walletAddress: formData.walletAddress,

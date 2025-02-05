@@ -7,7 +7,12 @@ const prisma = new PrismaClient();
 
 export async function POST(request) {
     try {
-        const { walletAddress, email, reference } = await request.json();
+        const { walletAddress, email, name, password, reference } = await request.json();
+        console.log("Wallet Address:", walletAddress);
+        console.log("email:", email);
+        console.log("name:", name);
+        console.log("password:", password);
+        console.log("reference:", reference);
 
         if (!walletAddress || !reference) {
             return NextResponse.json({ error: 'Missing walletAddress or reference' }, { status: 400 });
@@ -45,15 +50,32 @@ export async function POST(request) {
             return NextResponse.json({ error: 'User not found' }, { status: 404 });
         }
 
-        // 3. Mark user as premium
-        await prisma.user.update({
+        // 3. Update the user with the new name/email if needed
+        // If user already has name/email, decide if you want to overwrite or skip
+        let updatedUser = await prisma.user.update({
             where: { id: user.id },
             data: {
-                premium: true
+                premium: true,                // Activate premium
+                name: user.name || name,      // If user.name is null, set from form
+                email: user.email || email,   // If user.email is null, set from form
+                // For password, you'd need a "password" column or a separate Auth table if you want to store it.
             }
         });
 
-        // 4. Upsert a PremiumSubscription if they are a patient
+        // 4. If they are a patient, update the patient table too
+        if (user.patient) {
+            // If the patient doesn't have name or details, fill from the form
+            await prisma.patient.update({
+                where: { id: user.id }, // same ID as the user
+                data: {
+                    walletAddress: user.patient.walletAddress || walletAddress.toLowerCase(),
+                    name: user.patient.name || name,
+                    details: user.patient.details || '',
+                }
+            });
+        }
+
+        // 5. Upsert a PremiumSubscription if they are a patient
         if (user.patient) {
             const now = new Date();
             const endDate = new Date();
