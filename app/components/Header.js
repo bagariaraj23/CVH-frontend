@@ -121,9 +121,6 @@ export const Header = () => {
       setUserRole(role);
       setUserStatus(status);
 
-      console.log("User role check:", { role, status });
-
-      console.log(address, role, status);
       // First check if it's admin
       if (address === "0x4d5b0Ac9C4148932bd10a28B1E0a064f51f390D4".toLowerCase()) {
         router.push("/admin");

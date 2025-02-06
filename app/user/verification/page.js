@@ -31,14 +31,12 @@ export default function VerificationForm() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log(formData);
 
         try {
             const dataToSubmit = {
                 ...formData,
-                walletAddress: formData.walletAddress.toLowerCase() // Ensure lowercase
+                walletAddress: formData.walletAddress.toLowerCase()
             };
-            console.log("Submitting verification data:", dataToSubmit);
 
             const response = await submitVerificationRequest(dataToSubmit);
 

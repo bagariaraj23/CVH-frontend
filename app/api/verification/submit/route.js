@@ -10,8 +10,6 @@ export async function POST(request) {
         // Ensure wallet address is lowercase
         data.walletAddress = data.walletAddress.toLowerCase();
 
-        console.log("Received verification request data:", data);
-
         // Check if a verification request already exists
         const existingRequest = await prisma.verificationRequest.findFirst({
             where: { walletAddress: data.walletAddress }
@@ -40,7 +38,6 @@ export async function POST(request) {
                 details: data.details
             }
         });
-        console.log("User created/updated:", user);
 
         // Create or update verification request
         const verificationRequest = existingRequest
@@ -73,7 +70,6 @@ export async function POST(request) {
                     userId: user.id
                 }
             });
-        console.log("Verification request created/updated:", verificationRequest);
 
         return NextResponse.json({
             success: true,
