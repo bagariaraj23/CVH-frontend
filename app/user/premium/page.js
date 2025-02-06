@@ -74,7 +74,6 @@ const PremiumPage = () => {
     };
 
     const onClose = () => {
-        console.log("Payment closed");
         toast.info("Payment window closed.");
     };
 
@@ -94,7 +93,6 @@ const PremiumPage = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         // Basic form submission logic
-        console.log("Form data submitted:", formData);
         toast.success("Form details submitted. Proceed with payment!");
     };
 

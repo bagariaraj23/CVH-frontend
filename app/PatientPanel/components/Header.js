@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { BellIcon, QuestionMarkCircleIcon } from '@heroicons/react/outline';
 import Link from 'next/link';
+import { toast } from 'react-toastify';
 
 export default function Header() {
   const [user, setUser] = useState(null);     // Stores user details from DB
@@ -20,7 +21,7 @@ export default function Header() {
       if (address) {
         setWalletAddress(address);
       } else {
-        console.log("No wallet connected");
+        toast.error("No wallet connected");
       }
     } catch (error) {
       console.error("Failed to fetch wallet address!", error);
@@ -48,7 +49,6 @@ export default function Header() {
       console.log(data);
       // Example shape: data = { name: "John Doe", profileImage: "/some.png", wellnessScore: 85, ... }
       setUser(data);
-      console.log("User details fetched:", user);
     } catch (error) {
       console.error('Failed to fetch user details:', error);
       setUser(null);
@@ -60,7 +60,6 @@ export default function Header() {
   // Fetch user details when walletAddress changes
   useEffect(() => {
     if (walletAddress) {
-      console.log("Fetching user details for:", walletAddress);
       fetchUserDetails(walletAddress);
     }
   }, [walletAddress]); // <- Now runs only when walletAddress updates

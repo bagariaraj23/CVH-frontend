@@ -12,7 +12,6 @@ export default function AdminVerificationRequests() {
             setLoading(true);
             setError(null);
             try {
-                console.log("Admin is fetching pending verification requests...");
                 const data = await fetchVerificationRequests();
                 setRequests(data);
             } catch (err) {
@@ -29,7 +28,6 @@ export default function AdminVerificationRequests() {
         if (window.confirm(`Are you sure you want to mark this request as ${status}?`)) {
             setError(null);
             try {
-                console.log("Admin updating the status : ", status, " for the request ID: ", id);
                 await updateVerificationStatus(id, status);
                 setRequests((prev) => prev.filter((req) => req.id !== id));
             } catch (err) {

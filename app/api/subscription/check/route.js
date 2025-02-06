@@ -11,8 +11,6 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Wallet address required' }, { status: 400 });
         }
 
-        console.log("Checking subscription for wallet:", walletAddress);
-
         // 1. Find user by walletAddress
         const user = await prisma.user.findUnique({
             where: { walletAddress },

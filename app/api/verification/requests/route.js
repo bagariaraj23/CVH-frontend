@@ -36,23 +36,18 @@ export async function POST(req) {
             );
         }
 
-        console.log(walletAddress, JSON.stringify(verificationRequest));
-
         if (verificationRequest.status === "verified") {
             let roleDetails;
             let role = verificationRequest.role.toLowerCase();
-            console.log("role:", role);
 
             if (role === "doctor") {
                 roleDetails = await prisma.doctor.findFirst({
                     where: { walletAddress },
                 });
-                console.log("Inside doc", roleDetails);
             } else if (role === "hospital") {
                 roleDetails = await prisma.hospital.findFirst({
                     where: { walletAddress },
                 });
-                console.log("Inside hosp", roleDetails);
             } else if (role === "admin") {
                 roleDetails = await prisma.admin.findFirst({
                     where: { walletAddress },
@@ -62,8 +57,6 @@ export async function POST(req) {
                     where: { walletAddress },
                 });
             }
-
-            console.log(roleDetails);
 
             if (roleDetails) {
                 return new Response(

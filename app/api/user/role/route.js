@@ -23,10 +23,7 @@ export async function POST(req) {
             },
         });
 
-        console.log("User:", user, walletAddress);
-
         if (user) {
-            console.log("User found:", user);
             // Only return role if user is verified
             if (user.status === 'verified') {
                 return new Response(JSON.stringify({

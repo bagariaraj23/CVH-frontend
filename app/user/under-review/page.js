@@ -22,7 +22,6 @@ export default function UnderReview() {
                 method: "eth_requestAccounts",
             });
             const address = accounts[0];
-            // console.log("Connected wallet address:", address);
             await verifyStatus(address);
         } catch (err) {
             alert("Failed to connect wallet. Please try again.");
@@ -35,7 +34,6 @@ export default function UnderReview() {
     const verifyStatus = async (walletAddress) => {
         try {
             const response = await checkVerificationStatus(walletAddress);
-            console.log("Response at verifyStatus:", response);
 
             if (response.status === "verified") {
                 const { role } = response;

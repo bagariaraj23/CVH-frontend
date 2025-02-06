@@ -25,14 +25,11 @@ export const checkUserRole = async (walletAddress) => {
 };
 
 export const submitVerificationRequest = async (data) => {
-    console.log("Submitting verification request with data:", data);
     const response = await fetch("/api/verification/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
     });
-
-    console.log("Response status from submitVerificationRequest:", response.status);
 
     if (!response.ok) {
         const errorText = await response.text();
@@ -41,7 +38,6 @@ export const submitVerificationRequest = async (data) => {
     }
 
     const result = await response.json();
-    console.log("Verification request submission result:", result);
     return result;
 };
 
