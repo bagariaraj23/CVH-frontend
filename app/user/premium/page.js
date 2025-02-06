@@ -29,10 +29,8 @@ const PremiumPage = () => {
     // For $9.99 in USD, that typically means 9.99 * 100 = 999 (cents).
     // If your Paystack account is in NGN, you'd have to convert $9.99 => Naira => kobo.
     // For illustration, assume you can do $9.99 => 999 cents:
-    const amountInCents = 999; 
-    const amountInKobo = 1496200;
+    const amountInKobo = 14962*100;
     // // 5000 kobo = 50 NGN, or 500,000 kobo = 5000 NGN. Adjust as needed.
-    // const amount = 9.99;
 
     const handleChange = (e) => {
         const { name, value } = e.target;
