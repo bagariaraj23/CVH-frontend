@@ -5,14 +5,12 @@ export async function POST(request) {
     try {
         const { message } = await request.json();
 
-        console.log(openai);
-
         if (!message || message.trim().length === 0) {
             return NextResponse.json({ error: 'Message cannot be empty' }, { status: 400 });
         }
 
         const completion = await openai.chat.completions.create({
-            model: "gpt-4",
+            model: "gpt-3.5-turbo",
             messages: [
                 { role: "system", content: MEDICAL_SYSTEM_PROMPT },
                 { role: "user", content: message }
