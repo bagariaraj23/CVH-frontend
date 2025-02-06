@@ -102,6 +102,9 @@ model VerificationRequest {
 
 model User {
   id            String  @id @default(uuid())
+  email         String?  @unique
+  name          String?
+  premium       Boolean @default(false)
   walletAddress String  @unique
   role          Role    @default(PATIENT)
   status        Status  @default(pending)

@@ -9,12 +9,17 @@ import { toast } from 'react-toastify';
 
 export const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [walletAddress, setWalletAddress] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  const [walletAddress, setWalletAddress] = useState(null);
+  const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  
+  const [userRole, setUserRole] = useState(null);    // e.g. "doctor", "patient", etc.
+  const [userStatus, setUserStatus] = useState(null); // e.g. "pending", "verified", "not_verified"
+  
   const router = useRouter();
-  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     const checkWalletConnection = async () => {
@@ -113,6 +118,8 @@ export const Header = () => {
     try {
       const response = await checkUserRole(address.toLowerCase());
       const { role, status } = response;
+      setUserRole(role);
+      setUserStatus(status);
 
       console.log("User role check:", { role, status });
 
@@ -126,23 +133,12 @@ export const Header = () => {
       // Handle different status cases
       switch (status) {
         case "verified":
-          // Route to appropriate dashboard based on role
-          switch (role.toLowerCase()) {
-            case "admin":
-              router.push("/admin");
-              break;
-            case "doctor":
-              router.push("/DoctorPanel");
-              break;
-            case "hospital":
-              router.push("/HospitalPanel");
-              break;
-            case "patient":
-              router.push("/PatientPanel");
-              break;
-            default:
-              router.push("/user/verification");
-          }
+          // Instead of forcibly routing them, we let them remain on the page
+          // Then they can click a link "Go to your dashboard" if they want
+          toast.success(`You are verified as ${role}. You can access your dashboard from the menu.`, {
+            position: "top-right",
+            autoClose: 5000
+          });
           break;
 
         case "pending":
@@ -159,19 +155,15 @@ export const Header = () => {
           }
           router.push("/user/verification");
           break;
-
         case "new":
+        default:
           router.push("/user/verification");
           break;
-
-        default:
-          console.log("Or here ??")
-          router.push("/user/verification");
       }
     } catch (err) {
       console.error("Error in handleRoleCheck:", err);
       setError("Unable to check user role. Try again later.");
-      router.push("/user/verification");
+      // Possibly route to a default page or just do nothing
     }
   };
 
@@ -191,6 +183,28 @@ export const Header = () => {
     { name: "Terms of Service", link: "/user/termsAndServices" },
   ];
 
+  // If user is verified, we can show a direct link to their panel
+  // e.g. if userRole == "doctor", link => "/DoctorPanel"
+  let panelLink = null;
+  if (userStatus === "verified") {
+    switch ((userRole || "").toLowerCase()) {
+      case "admin":
+        panelLink = "/admin";
+        break;
+      case "doctor":
+        panelLink = "/DoctorPanel";
+        break;
+      case "hospital":
+        panelLink = "/HospitalPanel";
+        break;
+      case "patient":
+        panelLink = "/PatientPanel";
+        break;
+      default:
+        panelLink = "/user/verification";
+    }
+  }
+
   return (
     <header className="flex items-center justify-between px-5 py-3 bg-[#12104A] text-white shadow-md font-[Poppins] sticky top-0 z-50 sm:px-6 md:px-10 lg:px-12 xl:px-16 md:py-4">
       {/* Logo with Home Link */}
@@ -209,12 +223,19 @@ export const Header = () => {
       </Link>
 
       {/* Desktop Navigation Links */}
-      <nav className="hidden md:flex space-x-4 lg:space-x-6 text-white font-medium text-base lg:text-lg xl:text-xl">
+      <nav className="hidden md:flex space-x-4 text-white font-medium text-base lg:text-lg xl:text-xl">
         {navItems.map((navItem, idx) => (
           <Link key={idx} href={navItem.link} className="hover:text-gray-300">
             {navItem.name}
           </Link>
         ))}
+
+        {/* If user is verified, show a "Go to Dashboard" link manually */}
+        {userStatus === "verified" && panelLink && (
+          <Link href={panelLink} className="hover:text-gray-300">
+            Dashboard
+          </Link>
+        )}
 
         {/* Dropdown Menu for More */}
         <div
@@ -240,8 +261,6 @@ export const Header = () => {
       </nav>
 
       {/* Action Icons and Mobile Hamburger Icon */}
-
-
       <div className="flex items-center space-x-3 md:space-x-4 lg:space-x-5 text-white">
         <FaSearch className="text-base md:text-lg lg:text-xl hover:text-gray-300 cursor-pointer" />
         {/* Wallet Connect */}

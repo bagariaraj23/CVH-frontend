@@ -372,11 +372,34 @@ export default function ChatInterface({ mode = 'text' }) {
             return;
         }
 
+        // Premium check
         if (isPremiumFeature && !isPremium) {
-            showError({
-                name: 'PremiumRequired',
-                message: 'This feature requires a premium subscription'
-            });
+            // Show a toast that user can click to go to /user/premium
+            toast.info(
+                <div>
+                    This feature requires a premium subscription.{' '}
+                    <span
+                        style={{
+                            fontWeight: 'bold',
+                            textDecoration: 'underline',
+                            color: '#007bff',
+                            cursor: 'pointer'
+                        }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            // redirect to /user/premium
+                            window.location.href = '/user/premium';
+                        }}
+                    >
+                        Click here
+                    </span>{' '}
+                    to buy premium.
+                </div>,
+                {
+                    position: 'top-right',
+                    autoClose: 7000
+                }
+            );
             return;
         }
 
