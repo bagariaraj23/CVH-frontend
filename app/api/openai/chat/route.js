@@ -5,6 +5,8 @@ export async function POST(request) {
     try {
         const { message } = await request.json();
 
+        console.log(openai);
+
         if (!message || message.trim().length === 0) {
             return NextResponse.json({ error: 'Message cannot be empty' }, { status: 400 });
         }
