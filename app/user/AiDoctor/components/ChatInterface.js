@@ -4,8 +4,7 @@ import { FaMicrophone, FaStop, FaPaperPlane, FaLock } from 'react-icons/fa';
 import { useWallet } from '@/app/hooks/useWallet';
 import AudioVisualizer from './AudioVisualizer';
 import TypewriterEffect from './TypewriterEffect';
-import { CustomToastContainer, showError } from '@/app/components/ErrorNotification';
-import ErrorBoundary from '@/app/components/ErrorBoundary';
+import { showError } from '@/app/components/ErrorNotification';
 import { toast } from 'react-toastify';
 
 /**
