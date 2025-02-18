@@ -8,6 +8,7 @@ import Link from "next/link";
 export default function VerificationForm() {
     const [formData, setFormData] = useState({
         walletAddress: "",
+        email: "",
         role: "DOCTOR",
         details: "",
         // Doctor fields
@@ -54,7 +55,6 @@ export default function VerificationForm() {
                 autoClose: 5000
             });
             console.error("Error submitting verification:", error);
-
         }
     };
 
@@ -153,6 +153,17 @@ export default function VerificationForm() {
                             value={formData.walletAddress.toLowerCase()}
                             onChange={handleChange}
                             placeholder="Wallet Address"
+                            className="mt-1 p-2 w-full rounded border"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleChange}
+                            placeholder="Email Address"
                             className="mt-1 p-2 w-full rounded border"
                             required
                         />

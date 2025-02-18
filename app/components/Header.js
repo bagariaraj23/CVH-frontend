@@ -6,19 +6,23 @@ import { FaSearch, FaUser, FaShoppingBag, FaBars, FaTimes } from "react-icons/fa
 import { checkUserRole } from "../utils/api";
 import { useRouter } from "next/navigation";
 import { toast } from 'react-toastify';
+import useLoginModal from "@/app/hooks/useLoginModal";
 
 export const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+  const loginModal = useLoginModal();
+
   const [walletAddress, setWalletAddress] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  
+
   const [userRole, setUserRole] = useState(null);    // e.g. "doctor", "patient", etc.
   const [userStatus, setUserStatus] = useState(null); // e.g. "pending", "verified", "not_verified"
-  
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
   const router = useRouter();
 
   useEffect(() => {
@@ -183,8 +187,62 @@ export const Header = () => {
     } catch (err) {
       console.error("Error in handleRoleCheck:", err);
       setError("Unable to check user role. Try again later.");
-      // Possibly route to a default page or just do nothing
     }
+  };
+
+  const handleEmailLogin = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to login with email/password");
+      }
+
+      const data = await response.json();
+      setUserRole(data.role);
+      setUserStatus(data.status);
+      toast.success("Logged in successfully!", {
+        position: "top-right",
+        autoClose: 5000
+      });
+
+      // Redirect based on role and status
+      if (data.role === "admin") {
+        router.push("/admin");
+      } else if (data.status === "verified") {
+        switch (data.role) {
+          case "doctor":
+            router.push("/DoctorPanel");
+            break;
+          case "hospital":
+            router.push("/HospitalPanel");
+            break;
+          case "patient":
+            router.push("/PatientPanel");
+            break;
+          default:
+            router.push("/");
+        }
+      } else {
+        router.push("/user/under-review");
+      }
+    } catch (err) {
+      console.error("Error logging in with email/password:", err);
+      toast.error("Failed to login. Please check your credentials and try again.", {
+        position: "top-right",
+        autoClose: 5000
+      });
+    } finally {
+      setLoading(false);
+    }
+    setIsLoginModalOpen(false);
   };
 
   const navItems = [
@@ -286,14 +344,13 @@ export const Header = () => {
         {/* Wallet Connect */}
         <div
           className="flex items-center cursor-pointer space-x-2"
-          onClick={toggleWalletConnection}
+          onClick={loginModal.onOpen}
         >
           <FaUser className="text-base md:text-lg lg:text-xl hover:text-gray-300" />
           <span className="hidden md:block">
-            {loading ? "Connecting..." :
-              isConnected && walletAddress
-                ? `Disconnect: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
-                : "Connect Wallet"}
+            {isConnected && walletAddress
+              ? `Disconnect: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+              : "Login"}
           </span>
         </div>
         <FaShoppingBag className="text-base md:text-lg lg:text-xl hover:text-gray-300 cursor-pointer" />
@@ -344,6 +401,7 @@ export const Header = () => {
           </div>
         </nav>
       )}
+
     </header>
   );
 };
