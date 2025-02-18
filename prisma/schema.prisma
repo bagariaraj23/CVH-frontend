@@ -26,10 +26,18 @@ enum Status {
   not_verified
 }
 
-// Admin table for managing admins
+enum AuthType {
+  WALLET
+  EMAIL_PASSWORD
+}
+
 model Admin {
   id            String   @id @default(uuid())
-  walletAddress String   @unique
+  walletAddress String?  @unique  // Nullable to support email login
+  email         String?   @unique
+  password      String   // Hashed password for security
+  name          String
+  authType      AuthType @default(EMAIL_PASSWORD) // Supports both login methods
   createdAt     DateTime @default(now())
 }
 
@@ -102,13 +110,16 @@ model VerificationRequest {
 
 model User {
   id            String  @id @default(uuid())
-  email         String?  @unique
+  email         String? @unique
+  password      String? // Hashed password for email login
   name          String?
   premium       Boolean @default(false)
-  walletAddress String  @unique
+  walletAddress String? @unique  // Nullable to allow email-only users
   role          Role    @default(PATIENT)
   status        Status  @default(pending)
-  details       String? // Additional details provided during verification
+  details       String? 
+
+  authType      AuthType @default(WALLET) // Specifies login method
 
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
