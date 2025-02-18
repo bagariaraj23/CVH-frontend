@@ -77,70 +77,6 @@ export const Header = () => {
     });
   };
 
-  const toggleWalletConnection = async () => {
-    if (isConnected) {
-      handleDisconnect();
-    } else {
-      await connectWallet();
-    }
-  };
-
-  const connectWallet = async () => {
-    if (!window.ethereum) {
-      toast.error(
-        <div>
-          MetaMask is not installed. To proceed,{' '}
-          <span
-            style={{
-              fontWeight: 'bold',
-              textDecoration: 'underline',
-              color: '#007bff',
-              cursor: 'pointer'
-            }}
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent click from closing the toast
-              window.open('https://metamask.io/download.html', '_blank');
-            }}
-          >
-            Click here
-          </span>{' '}
-          to install MetaMask.
-        </div>,
-        {
-          position: 'top-right',
-          autoClose: 7000, // Give the user more time to read
-          closeOnClick: false, // Prevent accidental dismissal
-          draggable: true
-        }
-      );
-
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-      const address = accounts[0];
-      setWalletAddress(address);
-      setIsConnected(true);
-      await handleRoleCheck(address);
-    } catch (err) {
-      if (err.code === 4001) {
-        toast.error("Connection request denied by user.", {
-          position: "top-right",
-          autoClose: 5000
-        });
-      } else {
-        toast.error("Failed to connect wallet. Please try again.", {
-          position: "top-right",
-          autoClose: 5000
-        });
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleRoleCheck = async (address) => {
     try {
       const response = await checkUserRole(address.toLowerCase());
@@ -188,61 +124,6 @@ export const Header = () => {
       console.error("Error in handleRoleCheck:", err);
       setError("Unable to check user role. Try again later.");
     }
-  };
-
-  const handleEmailLogin = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ email, password })
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to login with email/password");
-      }
-
-      const data = await response.json();
-      setUserRole(data.role);
-      setUserStatus(data.status);
-      toast.success("Logged in successfully!", {
-        position: "top-right",
-        autoClose: 5000
-      });
-
-      // Redirect based on role and status
-      if (data.role === "admin") {
-        router.push("/admin");
-      } else if (data.status === "verified") {
-        switch (data.role) {
-          case "doctor":
-            router.push("/DoctorPanel");
-            break;
-          case "hospital":
-            router.push("/HospitalPanel");
-            break;
-          case "patient":
-            router.push("/PatientPanel");
-            break;
-          default:
-            router.push("/");
-        }
-      } else {
-        router.push("/user/under-review");
-      }
-    } catch (err) {
-      console.error("Error logging in with email/password:", err);
-      toast.error("Failed to login. Please check your credentials and try again.", {
-        position: "top-right",
-        autoClose: 5000
-      });
-    } finally {
-      setLoading(false);
-    }
-    setIsLoginModalOpen(false);
   };
 
   const navItems = [
