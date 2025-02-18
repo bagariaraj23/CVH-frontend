@@ -83,10 +83,33 @@ export const Header = () => {
 
   const connectWallet = async () => {
     if (!window.ethereum) {
-      toast.error("MetaMask not installed. Please install MetaMask to proceed.", {
-        position: "top-right",
-        autoClose: 5000
-      });
+      toast.error(
+        <div>
+          MetaMask is not installed. To proceed,{' '}
+          <span
+            style={{
+              fontWeight: 'bold',
+              textDecoration: 'underline',
+              color: '#007bff',
+              cursor: 'pointer'
+            }}
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent click from closing the toast
+              window.open('https://metamask.io/download.html', '_blank');
+            }}
+          >
+            Click here
+          </span>{' '}
+          to install MetaMask.
+        </div>,
+        {
+          position: 'top-right',
+          autoClose: 7000, // Give the user more time to read
+          closeOnClick: false, // Prevent accidental dismissal
+          draggable: true
+        }
+      );
+
       return;
     }
 
