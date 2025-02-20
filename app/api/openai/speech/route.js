@@ -28,10 +28,10 @@ export async function POST(request) {
             return NextResponse.json({ error: 'Wallet address required' }, { status: 401 });
         }
 
-        const hasAccess = await checkPremiumAccess(walletAddress);
-        if (!hasAccess) {
-            return NextResponse.json({ error: 'Premium subscription required' }, { status: 403 });
-        }
+        // const hasAccess = await checkPremiumAccess(walletAddress);
+        // if (!hasAccess) {
+        //     return NextResponse.json({ error: 'Premium subscription required' }, { status: 403 });
+        // }
 
         const formData = await request.formData();
         const audioFile = formData.get('audio');

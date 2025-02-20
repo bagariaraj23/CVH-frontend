@@ -372,35 +372,35 @@ export default function ChatInterface({ mode = 'text' }) {
         }
 
         // Premium check
-        if (isPremiumFeature && !isPremium) {
-            // Show a toast that user can click to go to /user/premium
-            toast.info(
-                <div>
-                    This feature requires a premium subscription.{' '}
-                    <span
-                        style={{
-                            fontWeight: 'bold',
-                            textDecoration: 'underline',
-                            color: '#007bff',
-                            cursor: 'pointer'
-                        }}
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            // redirect to /user/premium
-                            window.location.href = '/user/premium';
-                        }}
-                    >
-                        Click here
-                    </span>{' '}
-                    to buy premium.
-                </div>,
-                {
-                    position: 'top-right',
-                    autoClose: 7000
-                }
-            );
-            return;
-        }
+        // if (isPremiumFeature && !isPremium) {
+        //     // Show a toast that user can click to go to /user/premium
+        //     toast.info(
+        //         <div>
+        //             This feature requires a premium subscription.{' '}
+        //             <span
+        //                 style={{
+        //                     fontWeight: 'bold',
+        //                     textDecoration: 'underline',
+        //                     color: '#007bff',
+        //                     cursor: 'pointer'
+        //                 }}
+        //                 onClick={(e) => {
+        //                     e.stopPropagation();
+        //                     // redirect to /user/premium
+        //                     window.location.href = '/user/premium';
+        //                 }}
+        //             >
+        //                 Click here
+        //             </span>{' '}
+        //             to buy premium.
+        //         </div>,
+        //         {
+        //             position: 'top-right',
+        //             autoClose: 7000
+        //         }
+        //     );
+        //     return;
+        // }
 
         // Check microphone permission
         const hasPermission = await checkMicrophonePermission();
@@ -467,7 +467,7 @@ export default function ChatInterface({ mode = 'text' }) {
                 {/* Input Area */}
                 <div className="border-t p-4 bg-white">
                     {/* Example premium message if needed */}
-                    {mode !== 'text' && isPremiumFeature && !isPremium && !isConnected && (
+                    {(
                         <div className="flex items-center justify-center mb-4 text-sm text-gray-600">
                             <FaLock className="mr-2" />
                             This feature requires a premium subscription
@@ -487,7 +487,7 @@ export default function ChatInterface({ mode = 'text' }) {
                         />
 
                         {/* Show mic button only if user selected 'speech-to-text' or 'speech-to-speech' */}
-                        {mode !== 'text' && (
+                        {(
                             <button
                                 onClick={handleContinuousSpeechToggle}
                                 className={`p-2 rounded-full ${isRecording
