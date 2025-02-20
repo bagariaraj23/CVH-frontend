@@ -5,21 +5,24 @@ import axios from "axios";
 import { FaWallet } from "react-icons/fa";
 import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
-import Modal from "./modals/Modal";
-import Input from "./input";
+import Modal from "./Modal";
+import Input from "../input";
 import { toast } from "react-hot-toast";
-import Button from "./Button";
+import Button from "../Button";
 import useLoginModal from "@/app/hooks/useLoginModal";
-import { useRouter } from "next/navigation"; 
-import { checkUserRole } from "../utils/api";
+import { useRouter } from "next/navigation";
+import { checkUserRole } from "../../utils/api";
+import useRegisterModal from "@/app/hooks/useRegisterModal";
 
 const LoginModal = () => {
     const router = useRouter();
     const loginModal = useLoginModal();
+    const registerModal = useRegisterModal();
+    
     const [loading, setLoading] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
-    const [walletAddress, setWalletAddress] = useState(null); 
+    const [walletAddress, setWalletAddress] = useState(null);
     const [userRole, setUserRole] = useState(null);    // e.g. "doctor", "patient", etc.
     const [userStatus, setUserStatus] = useState(null); // e.g. "pending", "verified", "not_verified"
 
@@ -33,6 +36,11 @@ const LoginModal = () => {
             password: "",
         },
     });
+
+    const toggle = useCallback(() => {
+        loginModal.onClose();
+        registerModal.onOpen();
+    }, [loginModal, registerModal]);
 
     const onSubmit = (data) => {
         setIsLoading(true);
@@ -218,7 +226,19 @@ const LoginModal = () => {
                 icon={FaWallet}
                 onClick={toggleWalletConnection}
             />
-            
+
+            <div className="text-neutral-500 text-center mt-4 font-light">
+                <div className="justify-center flex flex-row items-center gap-2">
+                    <div>Don&apos;t have an Account?</div>
+                    <div
+                        onClick={toggle}
+                        className="text-neutral-800 cursor-pointer hover:underline"
+                    >
+                        Sign Up
+                    </div>
+                </div>
+            </div>
+
         </div>
     );
 
