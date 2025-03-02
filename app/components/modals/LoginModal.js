@@ -13,12 +13,13 @@ import useLoginModal from "@/app/hooks/useLoginModal";
 import { useRouter } from "next/navigation";
 import { checkUserRole } from "../../utils/api";
 import useRegisterModal from "@/app/hooks/useRegisterModal";
+import useAuthStore from "@/app/hooks/useAuthStore";
 
 const LoginModal = () => {
     const router = useRouter();
     const loginModal = useLoginModal();
     const registerModal = useRegisterModal();
-    
+
     const [loading, setLoading] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
@@ -42,25 +43,35 @@ const LoginModal = () => {
         registerModal.onOpen();
     }, [loginModal, registerModal]);
 
-    const onSubmit = (data) => {
+    const onSubmit = async (data) => {
         setIsLoading(true);
+        console.log("Data:", data);
 
-        signIn("credentials", {
-            ...data,
-            redirect: false,
-        }).then((callback) => {
+        try {
+            const response = await fetch('/api/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            });
+
+            console.log("Response:", response);
+
+            if (!response.ok) {
+                throw new Error(await response.statusText());
+            }
+
+            const result = await response.json();
+            toast.success(result.message);
+            useAuthStore.getState().setToken(result.token);
+            loginModal.onClose();
+            router.refresh();
+        } catch (error) {
+            toast.error(error.message || 'Invalid email or password');
+        } finally {
             setIsLoading(false);
-
-            if (callback?.ok) {
-                toast.success("Login Successful");
-                router.refresh();
-                loginModal.onClose();
-            }
-
-            if (callback?.error) {
-                toast.error(callback?.error);
-            }
-        });
+        }
     };
 
     const handleDisconnect = () => {

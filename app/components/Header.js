@@ -7,11 +7,14 @@ import { checkUserRole } from "../utils/api";
 import { useRouter } from "next/navigation";
 import { toast } from 'react-toastify';
 import useLoginModal from "@/app/hooks/useLoginModal";
+import useAuthStore from "@/app/hooks/useAuthStore";
 
 export const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const loginModal = useLoginModal();
+  const { token, clearToken, isAuthenticated } = useAuthStore();
+  const router = useRouter();
 
   const [walletAddress, setWalletAddress] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -22,8 +25,6 @@ export const Header = () => {
   const [userStatus, setUserStatus] = useState(null); // e.g. "pending", "verified", "not_verified"
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-
-  const router = useRouter();
 
   useEffect(() => {
     const checkWalletConnection = async () => {
@@ -126,6 +127,15 @@ export const Header = () => {
     }
   };
 
+  const handleLogout = () => {
+    clearToken();
+    toast.info("Logged out successfully", {
+      position: "top-right",
+      autoClose: 5000
+    });
+    router.push('/');
+  };
+
   const navItems = [
     { name: "Home", link: "/" },
     { name: "AI Doctor", link: "/user/AiDoctor" },
@@ -225,13 +235,11 @@ export const Header = () => {
         {/* Wallet Connect */}
         <div
           className="flex items-center cursor-pointer space-x-2"
-          onClick={loginModal.onOpen}
+          onClick={isAuthenticated() ? handleLogout : loginModal.onOpen}
         >
           <FaUser className="text-base md:text-lg lg:text-xl hover:text-gray-300" />
           <span className="hidden md:block">
-            {isConnected && walletAddress
-              ? `Disconnect: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
-              : "Login"}
+            {isAuthenticated() ? "Logout" : "Login"}
           </span>
         </div>
         <FaShoppingBag className="text-base md:text-lg lg:text-xl hover:text-gray-300 cursor-pointer" />

@@ -8,7 +8,6 @@ import useRegisterModal from "@/app/hooks/useRegisterModal";
 import Modal from "./Modal";
 import Input from "../input";
 import { toast } from "react-hot-toast";
-import Button from "../Button";
 import { signIn } from "next-auth/react";
 import useLoginModal from "@/app/hooks/useLoginModal";
 
@@ -20,30 +19,49 @@ const RegisterModal = () => {
     const {
         register,
         handleSubmit,
+        watch,
         formState: { errors },
     } = useForm({
         defaultValues: {
             name: "",
             email: "",
+            role: "DOCTOR",
+            name: "",
             password: "",
+            specialization: "",
+            licenseNumber: "",
+            address: "",
+            registrationId: "",
+            details: "",
         },
     });
 
-    const onSubmit = (data) => {
+    const role = watch("role");
+
+    const onSubmit = async (data) => {
         setIsLoading(true);
-        axios
-            .post("/api/auth/register", data)
-            .then(() => {
-                toast.success("Account Created Successfully");
-                registerModal.onClose();
-                loginModal.onOpen();
-            })
-            .catch(() => {
-                toast.error("Something Went Wrong. Please Try Again");
-            })
-            .finally(() => {
-                setIsLoading(false);
+        try {
+            const response = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
             });
+
+            if (!response.ok) {
+                throw new Error(await response.text());
+            }
+
+            const result = await response.json();
+            toast.success(result.message);
+            registerModal.onClose();
+            loginModal.onOpen();
+        } catch (error) {
+            toast.error(error.message || 'Something went wrong. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const toggle = useCallback(() => {
@@ -51,8 +69,35 @@ const RegisterModal = () => {
         loginModal.onOpen();
     }, [registerModal, loginModal]);
 
+    const renderRoleSpecificFields = () => {
+        switch (role) {
+            case "DOCTOR":
+                return (
+                    <>
+                        <Input id="name" label="Full Name" disabled={isLoading} register={register} errors={errors} required />
+                        <Input id="specialization" label="Specialization" disabled={isLoading} register={register} errors={errors} required />
+                        <Input id="licenseNumber" label="License Number" disabled={isLoading} register={register} errors={errors} required />
+                    </>
+                );
+            case "HOSPITAL":
+                return (
+                    <>
+                        <Input id="name" label="Hospital Name" disabled={isLoading} register={register} errors={errors} required />
+                        <Input id="address" label="Hospital Address" disabled={isLoading} register={register} errors={errors} required />
+                        <Input id="registrationId" label="Registration ID" disabled={isLoading} register={register} errors={errors} required />
+                    </>
+                );
+            case "PATIENT":
+                return (
+                    <Input id="name" label="Full Name" disabled={isLoading} register={register} errors={errors} required />
+                );
+            default:
+                return null;
+        }
+    };
+
     const bodyContent = (
-        <div className="flex flex-col gap-4">
+        <div className="flex text-black flex-col gap-4">
             <div className={'text-center'}>
                 <div className="text-2xl text-black font-bold">
                     Welcome to CVH!
@@ -62,8 +107,26 @@ const RegisterModal = () => {
                 </div>
             </div>
             <Input id="email" label="Email" disabled={isLoading} register={register} errors={errors} required />
-            <Input id="name" label="Name" disabled={isLoading} register={register} errors={errors} required />
             <Input id="password" type="password" label="Password" disabled={isLoading} register={register} errors={errors} required />
+            <select
+                id="role"
+                {...register("role")}
+                className="mt-1 p-2 w-full rounded border"
+                disabled={isLoading}
+            >
+                <option value="DOCTOR">Doctor</option>
+                <option value="HOSPITAL">Hospital</option>
+                <option value="PATIENT">Patient</option>
+            </select>
+            {renderRoleSpecificFields()}
+            <textarea
+                id="details"
+                {...register("details")}
+                placeholder="Additional Details"
+                className="mt-1 p-2 w-full rounded border"
+                rows="4"
+                disabled={isLoading}
+            ></textarea>
         </div>
     );
 
