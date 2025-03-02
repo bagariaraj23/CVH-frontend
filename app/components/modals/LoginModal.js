@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation";
 import { checkUserRole } from "../../utils/api";
 import useRegisterModal from "@/app/hooks/useRegisterModal";
 import useAuthStore from "@/app/hooks/useAuthStore";
+import { checkRoleWithEmail } from "../../utils/api";
 
 const LoginModal = () => {
     const router = useRouter();
@@ -26,6 +27,10 @@ const LoginModal = () => {
     const [walletAddress, setWalletAddress] = useState(null);
     const [userRole, setUserRole] = useState(null);    // e.g. "doctor", "patient", etc.
     const [userStatus, setUserStatus] = useState(null); // e.g. "pending", "verified", "not_verified"
+
+    const [userDetails, setUserDetails] = useState(null);
+    const [userRoleFromEmail, setUserRoleFromEmail] = useState(null);
+    const [userStatusFromEmail, setUserStatusFromEmail] = useState(null);  
 
     const {
         register,
@@ -45,7 +50,6 @@ const LoginModal = () => {
 
     const onSubmit = async (data) => {
         setIsLoading(true);
-        console.log("Data:", data);
 
         try {
             const response = await fetch('/api/auth/login', {
@@ -62,10 +66,18 @@ const LoginModal = () => {
                 throw new Error(await response.statusText());
             }
 
+            loginModal.onClose();
+
             const result = await response.json();
+            const userEmail = result.user.email;
+
+            console.log("User Email:", userEmail);
+
+            await handleRoleCheckEmail(userEmail);
+            // console.log("Result:", result);
             toast.success(result.message);
             useAuthStore.getState().setToken(result.token);
-            loginModal.onClose();
+
             router.refresh();
         } catch (error) {
             toast.error(error.message || 'Invalid email or password');
@@ -73,6 +85,56 @@ const LoginModal = () => {
             setIsLoading(false);
         }
     };
+
+    const handleRoleCheckEmail = async (userEmail) => {
+        try {
+            const response = await checkRoleWithEmail(userEmail);
+            const { role, status } = response;
+            setUserRoleFromEmail(role);
+            setUserStatusFromEmail(status);
+
+            console.log("Response inside handleRolecheckEmail:" , response);
+
+            if (userEmail === "admin@gmail.com") {
+                router.push("/admin");
+                return;
+            }
+ 
+            // console.log("User Role:", userRoleFromEmail);
+            // console.log("User Status:", userStatusFromEmail);
+
+            switch (status) {
+                case "verified":
+                    toast.success(`You are verified as ${role}. You can access your dashboard from the menu.`, {
+                        position: "top-right",
+                        autoClose: 5000
+                    });
+                    break;
+                case "pending":
+                    router.push("/user/under-review");
+                    break;
+
+                case "not_verified":
+                    switch (role.toLowerCase()) {
+                        case "none":
+                            toast.warning("The user has been marked as not verified. Please fill the verification Form again!", {
+                                position: "top-right",
+                                autoClose: 5000
+                            });
+                    }
+                    router.push("/user/verification");
+                    break;
+                case "new":
+                default:
+                    router.push("/user/verification");
+                    break;
+            }
+
+        } catch (error) {
+            console.error("Error in handleRoleCheck:", err);
+            setError("Unable to check user role. Try again later.");
+        }
+    }
 
     const handleDisconnect = () => {
         setWalletAddress(null);

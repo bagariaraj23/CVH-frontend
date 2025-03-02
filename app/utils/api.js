@@ -1,4 +1,28 @@
 // utils/api.js
+export const checkRoleWithEmail = async (email) => {
+    try {
+        const response = await fetch("/api/user/emailAuth/role", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ email }),
+        });
+        if (!response.ok) {
+            throw new Error("Failed to check user role");
+        }
+
+        const data = await response.json();
+        return {
+            role: data.role,
+            status: data.status
+        };
+    } catch (error) {
+        console.error("Error checking user role:", error);
+        throw error;
+    }
+}
+
 export const checkUserRole = async (walletAddress) => {
     try {
         const response = await fetch("/api/user/role", {
