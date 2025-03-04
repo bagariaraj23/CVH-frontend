@@ -72,6 +72,9 @@ const LoginModal = () => {
             const userEmail = result.user.email;
 
             console.log("User Email:", userEmail);
+            // Set the email in the auth store
+            useAuthStore.getState().setEmail(userEmail);
+
 
             await handleRoleCheckEmail(userEmail);
             // console.log("Result:", result);

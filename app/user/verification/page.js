@@ -1,13 +1,13 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { submitVerificationRequest } from "@/app/utils/api";
+import { submitVerificationRequestEmail } from "@/app/utils/api";
 import { toast } from 'react-toastify';
 import Link from "next/link";
 
 export default function VerificationForm() {
     const [formData, setFormData] = useState({
-        walletAddress: "",
+        // walletAddress: "",
         email: "",
         role: "DOCTOR",
         details: "",
@@ -36,10 +36,10 @@ export default function VerificationForm() {
         try {
             const dataToSubmit = {
                 ...formData,
-                walletAddress: formData.walletAddress.toLowerCase()
+                // walletAddress: formData.walletAddress.toLowerCase()
             };
 
-            const response = await submitVerificationRequest(dataToSubmit);
+            const response = await submitVerificationRequestEmail(dataToSubmit);
 
             if (response.success) {
                 router.push("/user/under-review");
@@ -146,7 +146,7 @@ export default function VerificationForm() {
             <div className="bg-white text-blue-900 rounded-lg shadow-lg p-8 max-w-lg w-full">
                 <h2 className="text-2xl font-bold mb-6 text-center">Verification Form</h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
+                    {/* <div>
                         <input
                             type="text"
                             name="walletAddress"
@@ -156,7 +156,7 @@ export default function VerificationForm() {
                             className="mt-1 p-2 w-full rounded border"
                             required
                         />
-                    </div>
+                    </div> */}
                     <div>
                         <input
                             type="email"

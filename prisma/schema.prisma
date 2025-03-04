@@ -86,7 +86,8 @@ model VerificationRequest {
   id            String  @id @default(uuid())
   userId        String  @unique // Foreign key referencing the User table
   user          User    @relation(fields: [userId], references: [id])
-  walletAddress String  @unique
+  walletAddress String? @unique // Nullable to support email-based verification
+  email         String? @unique // Nullable to support wallet-based verification
   role          Role    @default(PATIENT)
   details       String? // Additional details from the verification form
   status        Status  @default(pending)

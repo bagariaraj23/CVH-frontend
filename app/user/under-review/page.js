@@ -1,8 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
-import { checkVerificationStatus } from "@/app/utils/api";
+import { checkVerificationStatusEmail } from "@/app/utils/api";
 import { useRouter } from "next/navigation";
 import { toast } from 'react-toastify';
+import useAuthStore from "@/app/hooks/useAuthStore";
 
 export default function UnderReview() {
     const [error, setError] = useState(null);
@@ -134,7 +135,71 @@ export default function UnderReview() {
     //     verifyStatus();
     // }, [router]);
 
+    // Get the email from the auth store
+    const email = useAuthStore((state) => state.email);
 
+    const verifyStatusEmail = async () => {
+        if (!email) {
+            setError("Email not found. Please log in again.");
+            return;
+        }
+
+        console.log(email);
+
+        try {
+            const response = await checkVerificationStatusEmail(email);
+
+            console.log(response);
+
+            if (response.status === "verified") {
+                const { role } = response;
+
+                switch (role) {
+                    case "doctor":
+                        router.push(`/DoctorPanel`);
+                        break;
+                    case "hospital":
+                        router.push(`/HospitalPanel`);
+                        break;
+                    case "admin":
+                        router.push(`/AdminPanel`);
+                        break;
+                    case "patient":
+                        router.push(`/PatientPanel`);
+                        break;
+                    default:
+                        console.warn(`Unknown role: ${role}`);
+                        setError("Unexpected role. Please contact support.");
+                }
+            } else if (response.status === "not_verified") {
+                router.push(`/user/not-verified`);
+            } else if (response.status === "not-found") {
+                toast.info(
+                    `The Verification request for the user with email: ${email} not found. Please fill out the verification form to continue!`,
+                    {
+                        position: "top-right",
+                        autoClose: 5000
+                    }
+                );
+                router.push(`/user/verification`);
+            } else if (response.status === "pending") {
+                toast.info(
+                    `The Verification request for the user with email: ${email} is still Pending.`,
+                    {
+                        position: "top-right",
+                        autoClose: 5000
+                    }
+                );
+                router.push(`/user/pending`);
+            } else {
+                console.warn("Unexpected status:", response.status);
+                setError("Unexpected verification status. Please contact support.");
+            }
+        } catch (err) {
+            console.error("Error checking verification status:", err);
+            setError("Failed to check verification status. Please try again.");
+        }
+    }
 
     if (error) {
         return (
@@ -154,11 +219,12 @@ export default function UnderReview() {
                     Click below to check your verification status:
                 </p>
                 <button
-                    onClick={connectWallet}
+                    onClick={verifyStatusEmail}
                     className="w-full px-4 py-2 bg-blue-600 text-white rounded-md text-lg font-semibold shadow hover:bg-blue-500 transition duration-200"
                 >
                     Check Verification Status
                 </button>
+                
             </div>
         </div>
     );
