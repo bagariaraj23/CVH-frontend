@@ -427,7 +427,6 @@ export default function ChatInterface({ mode = 'text' }) {
         // Premium check
         if (isPremiumFeature && !isPremium) {
             // Show a toast that user can click to go to /user/premium
-            console.log("Is PremiumFeature:", isPremiumFeature, "isPremium user:", isPremium);
             toast.info(
                 <div>
                     This feature requires a premium subscription.{' '}
@@ -521,7 +520,7 @@ export default function ChatInterface({ mode = 'text' }) {
                 {/* Input Area */}
                 <div className="border-t p-4 bg-white">
                     {/* Example premium message if needed */}
-                    {(
+                    {isPremiumFeature && (
                         <div className="flex items-center justify-center mb-4 text-sm text-gray-600">
                             <FaLock className="mr-2" />
                             This feature requires a premium subscription

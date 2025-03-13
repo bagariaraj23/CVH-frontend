@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope, faLock, faUser, faWallet } from "@fortawesome/free-solid-svg-icons";
 import { toast } from "react-toastify";
+import useAuthStore from "@/app/hooks/useAuthStore";
 
 // Dynamically import PaystackButton with no SSR
 const PaystackButton = dynamic(() => import("react-paystack").then(mod => mod.PaystackButton), {
@@ -17,7 +18,7 @@ const PremiumPage = () => {
         name: "",
         email: "",
         password: "",
-        walletAddress: "",
+        // walletAddress: "",
     });
 
     const router = useRouter();
@@ -56,7 +57,7 @@ const PremiumPage = () => {
                     name: formData.name,
                     email: formData.email,
                     password: formData.password, // If you plan to store it
-                    walletAddress: formData.walletAddress,
+                    // walletAddress: formData.walletAddress,
                     reference: reference.reference
                 })
             });
@@ -64,6 +65,12 @@ const PremiumPage = () => {
             if (!res.ok) {
                 throw new Error("Failed to activate premium membership");
             }
+
+            useAuthStore.getState().updateUser({
+                email,
+                name,
+                premium: true, // Mark user as premium
+            });
 
             toast.success("Your premium membership is activated!");
             router.push("/user/premium/success");
@@ -82,7 +89,7 @@ const PremiumPage = () => {
         amount: amountInKobo,
         metadata: {
             name: formData.name,
-            walletAddress: formData.walletAddress,
+            // walletAddress: formData.walletAddress,
         },
         publicKey,
         text: "Pay Now",
@@ -167,7 +174,7 @@ const PremiumPage = () => {
                         </div>
                     </div>
 
-                    <div>
+                    {/* <div>
                         <label htmlFor="walletAddress" className="block text-gray-700 font-medium">
                             Wallet Address
                         </label>
@@ -184,7 +191,7 @@ const PremiumPage = () => {
                                 required
                             />
                         </div>
-                    </div>
+                    </div> */}
 
                     {/* We first submit the form (handleSubmit) to show toast, etc. Then user can click Paystack button
                     <button

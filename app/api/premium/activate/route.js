@@ -7,15 +7,15 @@ const prisma = new PrismaClient();
 
 export async function POST(request) {
     try {
-        const { walletAddress, email, name, password, reference } = await request.json();
-        console.log("Wallet Address:", walletAddress);
-        console.log("email:", email);
-        console.log("name:", name);
-        console.log("password:", password);
-        console.log("reference:", reference);
+        const { email, name, password, reference } = await request.json();
+        // console.log("Wallet Address:", walletAddress);
+        // console.log("email:", email);
+        // console.log("name:", name);
+        // console.log("password:", password);
+        // console.log("reference:", reference);
 
-        if (!walletAddress || !reference) {
-            return NextResponse.json({ error: 'Missing walletAddress or reference' }, { status: 400 });
+        if (!email || !reference) {
+            return NextResponse.json({ error: 'Missing Email or reference' }, { status: 400 });
         }
 
         // 1. Verify with Paystack
@@ -26,16 +26,16 @@ export async function POST(request) {
         }
 
         // 2. Find user by walletAddress or fallback to email
-        let user = await prisma.user.findUnique({
-            where: { walletAddress },
-            include: {
-                patient: {
-                    include: { premiumSubscription: true }
-                }
-            }
-        });
+        // let user = await prisma.user.findUnique({
+        //     where: { walletAddress },
+        //     include: {
+        //         patient: {
+        //             include: { premiumSubscription: true }
+        //         }
+        //     }
+        // });
 
-        if (!user && email) {
+        if (email) {
             user = await prisma.user.findUnique({
                 where: { email },
                 include: {
@@ -68,7 +68,7 @@ export async function POST(request) {
             await prisma.patient.update({
                 where: { id: user.id }, // same ID as the user
                 data: {
-                    walletAddress: user.patient.walletAddress || walletAddress.toLowerCase(),
+                    email: user.patient.email || email,
                     name: user.patient.name || name,
                     details: user.patient.details || '',
                 }
