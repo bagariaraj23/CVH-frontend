@@ -53,7 +53,8 @@ export default function AdminVerificationRequests() {
                     {requests.map((req) => (
                         <div key={req.id} className="p-4 bg-white shadow rounded-lg flex justify-between items-center">
                             <div>
-                                <p><strong>Wallet Address:</strong> {req.walletAddress}</p>
+                                <p><strong>Wallet Address:</strong> {req.walletAddress || "N/A"}</p>
+                                <p><strong>Email:</strong> {req.email || "N/A"}</p>
                                 <p><strong>Role:</strong> {req.role}</p>
                                 <p><strong>Details:</strong> {req.details || "N/A"}</p>
                                 {req.role === 'DOCTOR' && (

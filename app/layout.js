@@ -3,6 +3,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { CustomToastContainer } from './components/ErrorNotification';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from "react-toastify";
+import LoginModal from "./components/modals/LoginModal";
+import RegisterModal from "./components/modals/RegisterModal";
 
 export default function RootLayout({ children }) {
   const navItems = [
@@ -22,6 +24,8 @@ export default function RootLayout({ children }) {
       </head>
       <body>
         <ErrorBoundary>
+          <LoginModal />
+          <RegisterModal />
           <main>{children}</main>
           <ToastContainer />
         </ErrorBoundary>

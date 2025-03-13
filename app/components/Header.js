@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -6,20 +7,35 @@ import { FaSearch, FaUser, FaShoppingBag, FaBars, FaTimes } from "react-icons/fa
 import { checkUserRole } from "../utils/api";
 import { useRouter } from "next/navigation";
 import { toast } from 'react-toastify';
+import useLoginModal from "@/app/hooks/useLoginModal";
+import useAuthStore from "@/app/hooks/useAuthStore";
 
 export const Header = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+  const loginModal = useLoginModal();
+  const { token, clearToken, isAuthenticated } = useAuthStore();
+  const router = useRouter();
+
   const [walletAddress, setWalletAddress] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  
+
   const [userRole, setUserRole] = useState(null);    // e.g. "doctor", "patient", etc.
   const [userStatus, setUserStatus] = useState(null); // e.g. "pending", "verified", "not_verified"
-  
-  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [user, setUser] = useState(null);     // Stores user details from DB
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      setUser(useAuthStore.getState().user);
+    } else {
+      setUser(null);
+    }
+  }, [isAuthenticated, user]); 
 
   useEffect(() => {
     const checkWalletConnection = async () => {
@@ -73,70 +89,6 @@ export const Header = () => {
     });
   };
 
-  const toggleWalletConnection = async () => {
-    if (isConnected) {
-      handleDisconnect();
-    } else {
-      await connectWallet();
-    }
-  };
-
-  const connectWallet = async () => {
-    if (!window.ethereum) {
-      toast.error(
-        <div>
-          MetaMask is not installed. To proceed,{' '}
-          <span
-            style={{
-              fontWeight: 'bold',
-              textDecoration: 'underline',
-              color: '#007bff',
-              cursor: 'pointer'
-            }}
-            onClick={(e) => {
-              e.stopPropagation(); // Prevent click from closing the toast
-              window.open('https://metamask.io/download.html', '_blank');
-            }}
-          >
-            Click here
-          </span>{' '}
-          to install MetaMask.
-        </div>,
-        {
-          position: 'top-right',
-          autoClose: 7000, // Give the user more time to read
-          closeOnClick: false, // Prevent accidental dismissal
-          draggable: true
-        }
-      );
-
-      return;
-    }
-
-    try {
-      setLoading(true);
-      const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
-      const address = accounts[0];
-      setWalletAddress(address);
-      setIsConnected(true);
-      await handleRoleCheck(address);
-    } catch (err) {
-      if (err.code === 4001) {
-        toast.error("Connection request denied by user.", {
-          position: "top-right",
-          autoClose: 5000
-        });
-      } else {
-        toast.error("Failed to connect wallet. Please try again.", {
-          position: "top-right",
-          autoClose: 5000
-        });
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleRoleCheck = async (address) => {
     try {
       const response = await checkUserRole(address.toLowerCase());
@@ -183,8 +135,17 @@ export const Header = () => {
     } catch (err) {
       console.error("Error in handleRoleCheck:", err);
       setError("Unable to check user role. Try again later.");
-      // Possibly route to a default page or just do nothing
     }
+  };
+
+  const handleLogout = () => {
+    clearToken();
+    toast.info("Logged out successfully", {
+      position: "top-right",
+      autoClose: 5000
+    });
+    router.push('/');
+    router.refresh();
   };
 
   const navItems = [
@@ -206,8 +167,8 @@ export const Header = () => {
   // If user is verified, we can show a direct link to their panel
   // e.g. if userRole == "doctor", link => "/DoctorPanel"
   let panelLink = null;
-  if (userStatus === "verified") {
-    switch ((userRole || "").toLowerCase()) {
+  if (user?.status === "verified") {
+    switch ((user?.role || "").toLowerCase()) {
       case "admin":
         panelLink = "/admin";
         break;
@@ -251,7 +212,7 @@ export const Header = () => {
         ))}
 
         {/* If user is verified, show a "Go to Dashboard" link manually */}
-        {userStatus === "verified" && panelLink && (
+        {user?.status === "verified" && panelLink && (
           <Link href={panelLink} className="hover:text-gray-300">
             Dashboard
           </Link>
@@ -286,14 +247,11 @@ export const Header = () => {
         {/* Wallet Connect */}
         <div
           className="flex items-center cursor-pointer space-x-2"
-          onClick={toggleWalletConnection}
+          onClick={isAuthenticated() ? handleLogout : loginModal.onOpen}
         >
           <FaUser className="text-base md:text-lg lg:text-xl hover:text-gray-300" />
           <span className="hidden md:block">
-            {loading ? "Connecting..." :
-              isConnected && walletAddress
-                ? `Disconnect: ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
-                : "Connect Wallet"}
+            {isAuthenticated() ? "Logout" : "Login"}
           </span>
         </div>
         <FaShoppingBag className="text-base md:text-lg lg:text-xl hover:text-gray-300 cursor-pointer" />
@@ -344,6 +302,7 @@ export const Header = () => {
           </div>
         </nav>
       )}
+
     </header>
   );
 };
