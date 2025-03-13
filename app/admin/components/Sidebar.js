@@ -1,8 +1,16 @@
 // components/Sidebar.js
+'use client';
+
+import Link from 'next/link';
 
 export const Sidebar = () => {
     return (
       <aside className="w-64 h-screen bg-[#12104A] text-white">
+        <div className="flex items-center justify-center mt-10">
+          <Link href="/" className="text-2xl font-bold">
+            CareValue Health
+          </Link>
+        </div>
         <nav className="mt-10 space-y-2">
           {/* Dashboard */}
           <a

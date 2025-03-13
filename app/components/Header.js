@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -25,6 +26,16 @@ export const Header = () => {
   const [userStatus, setUserStatus] = useState(null); // e.g. "pending", "verified", "not_verified"
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const [user, setUser] = useState(null);     // Stores user details from DB
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      setUser(useAuthStore.getState().user);
+    } else {
+      setUser(null);
+    }
+  }, [isAuthenticated, user]); 
 
   useEffect(() => {
     const checkWalletConnection = async () => {
@@ -134,6 +145,7 @@ export const Header = () => {
       autoClose: 5000
     });
     router.push('/');
+    router.refresh();
   };
 
   const navItems = [
@@ -155,8 +167,8 @@ export const Header = () => {
   // If user is verified, we can show a direct link to their panel
   // e.g. if userRole == "doctor", link => "/DoctorPanel"
   let panelLink = null;
-  if (userStatus === "verified") {
-    switch ((userRole || "").toLowerCase()) {
+  if (user?.status === "verified") {
+    switch ((user?.role || "").toLowerCase()) {
       case "admin":
         panelLink = "/admin";
         break;
@@ -200,7 +212,7 @@ export const Header = () => {
         ))}
 
         {/* If user is verified, show a "Go to Dashboard" link manually */}
-        {userStatus === "verified" && panelLink && (
+        {user?.status === "verified" && panelLink && (
           <Link href={panelLink} className="hover:text-gray-300">
             Dashboard
           </Link>

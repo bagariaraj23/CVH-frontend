@@ -7,7 +7,7 @@ import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import Modal from "./Modal";
 import Input from "../input";
-import { toast } from "react-hot-toast";
+import {toast} from 'react-toastify';
 import Button from "../Button";
 import useLoginModal from "@/app/hooks/useLoginModal";
 import { useRouter } from "next/navigation";
@@ -71,15 +71,16 @@ const LoginModal = () => {
             const result = await response.json();
             const userEmail = result.user.email;
 
-            console.log("User Email:", userEmail);
             // Set the email in the auth store
             useAuthStore.getState().setEmail(userEmail);
-
+            useAuthStore.getState().setToken(result.token);
+            useAuthStore.getState().setUser(result.user);
 
             await handleRoleCheckEmail(userEmail);
-            // console.log("Result:", result);
             toast.success(result.message);
-            useAuthStore.getState().setToken(result.token);
+
+            console.log("Email from store: ", useAuthStore.getState().email);
+            console.log("Token from store: ", useAuthStore.getState().token);
 
             router.refresh();
         } catch (error) {
@@ -102,21 +103,17 @@ const LoginModal = () => {
                 router.push("/admin");
                 return;
             }
- 
-            // console.log("User Role:", userRoleFromEmail);
-            // console.log("User Status:", userStatusFromEmail);
 
             switch (status) {
                 case "verified":
-                    toast.success(`You are verified as ${role}. You can access your dashboard from the menu.`, {
+                    toast.success(`You are verified as ${role}. You can access your dashboard from the menu. Please refresh the page once!`, {
                         position: "top-right",
                         autoClose: 5000
                     });
-                    break;
+                    break; 
                 case "pending":
                     router.push("/user/under-review");
                     break;
-
                 case "not_verified":
                     switch (role.toLowerCase()) {
                         case "none":

@@ -1,13 +1,27 @@
 'use client';
 
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
-const useAuthStore = create((set, get) => ({
-    token: null,
-    setToken: (token) => set({ token }),
-    setEmail: (email) => set({ email }),
-    clearToken: () => set({ token: null }),
-    isAuthenticated: () => !!get().token, // Now get() is properly defined
-}));
+const useAuthStore = create(
+    persist(
+        (set, get) => ({
+            token: null,
+            email: null,
+            user: null,
+
+            setToken: (token) => set({ token }),
+            setEmail: (email) => set({ email }),
+            setUser: (user) => set({ user }),
+            clearToken: () => set({ token: null, email: null, user: null }),
+
+            isAuthenticated: () => !!get().token,
+        }),
+        {
+            name: 'auth-storage', // Storage key in localStorage
+            getStorage: () => localStorage, // Use localStorage
+        }
+    )
+);
 
 export default useAuthStore;
