@@ -2,6 +2,7 @@ import "../globals.css";
 import { Header } from "../components/Header";
 import { Footer } from "../components/Footer";
 import { StickyCTA } from "../components/StickyCTA";
+import LoginModal from "../components/modals/LoginModal";
 
 export default function RootLayout({ children }) {
   const navItems = [
