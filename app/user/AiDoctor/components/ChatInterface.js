@@ -6,6 +6,8 @@ import AudioVisualizer from './AudioVisualizer';
 import TypewriterEffect from './TypewriterEffect';
 import { showError } from '@/app/components/ErrorNotification';
 import { toast } from 'react-toastify';
+import useAuthStore from "@/app/hooks/useAuthStore";
+import useLoginModal from "@/app/hooks/useLoginModal";
 
 /**
  * ChatInterface supports:
@@ -28,7 +30,7 @@ export default function ChatInterface({ mode = 'text' }) {
     const isPremiumFeature = mode !== 'text';
 
     // From your wallet hook (uncomment or adapt if needed)
-    const { isConnected, isPremium, connectWallet, walletAddress } = useWallet();
+    // const { isConnected, isPremium, connectWallet, walletAddress } = useWallet();
 
     // Refs
     const mediaRecorder = useRef(null);
@@ -39,6 +41,22 @@ export default function ChatInterface({ mode = 'text' }) {
     // Additional states
     const [isTyping, setIsTyping] = useState(false);
     const [hasMicPermission, setHasMicPermission] = useState(null);
+
+    const loginModal = useLoginModal();
+
+    const { token, clearToken, isAuthenticated } = useAuthStore();
+    const [user, setUser] = useState(null);     // Stores user details from DB
+
+    useEffect(() => {
+        if (isAuthenticated()) {
+            setUser(useAuthStore.getState().user);
+        } else {
+            setUser(null);
+        }
+    }, [isAuthenticated, user]); 
+
+
+    const isPremium = useAuthStore.getState().user?.premium;
 
     /**
      * Scroll the chat container to the bottom whenever messages change
@@ -118,7 +136,8 @@ export default function ChatInterface({ mode = 'text' }) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'wallet-address': walletAddress || '',
+                    // 'wallet-address': walletAddress || '',
+                    'email': user?.email || '',
                 },
                 body: JSON.stringify({ message: input })
             });
@@ -251,7 +270,8 @@ export default function ChatInterface({ mode = 'text' }) {
             const response = await fetch('/api/openai/speech', {
                 method: 'POST',
                 headers: {
-                    'wallet-address': walletAddress || ''
+                    // 'wallet-address': walletAddress || ''
+                    'email': user?.email,
                 },
                 body: formData
             });
@@ -337,13 +357,12 @@ export default function ChatInterface({ mode = 'text' }) {
             ttsAudioRef.current.pause();
             ttsAudioRef.current.currentTime = 0; // reset
         }
-        
-        // Uncomment these checks if you need premium/wallet gating:
-        if (!isConnected) {
-            toast.error("Metamask not connected!")
+
+        if(!isAuthenticated()){
+            toast.error("User Not Logged In!")
             toast.info(
                 <div>
-                    You need to connect your wallet to use voice features.{' '}
+                    You need to login to use voice features.{' '}
                     <span
                         style={{
                             fontWeight: 'bold',
@@ -351,15 +370,16 @@ export default function ChatInterface({ mode = 'text' }) {
                             color: '#007bff',
                             cursor: 'pointer'
                         }}
-                        onClick={async (e) => {
+                        onClick={
                             // Prevent the click from triggering the toast's default onClick (if any)
-                            e.stopPropagation();
-                            await connectWallet();
-                        }}
+                            // e.stopPropagation();
+                            loginModal.onOpen
+                            // await connectWallet();
+                        }
                     >
                         Click here
                     </span>{' '}
-                    to Connect to Metamask
+                    to login
                 </div>,
                 {
                     position: 'top-right',
@@ -370,13 +390,13 @@ export default function ChatInterface({ mode = 'text' }) {
 
             return;
         }
-
-        // Premium check
-        // if (isPremiumFeature && !isPremium) {
-        //     // Show a toast that user can click to go to /user/premium
+        
+        // Uncomment these checks if you need premium/wallet gating:
+        // if (!isConnected) {
+        //     toast.error("Metamask not connected!")
         //     toast.info(
         //         <div>
-        //             This feature requires a premium subscription.{' '}
+        //             You need to connect your wallet to use voice features.{' '}
         //             <span
         //                 style={{
         //                     fontWeight: 'bold',
@@ -384,23 +404,56 @@ export default function ChatInterface({ mode = 'text' }) {
         //                     color: '#007bff',
         //                     cursor: 'pointer'
         //                 }}
-        //                 onClick={(e) => {
+        //                 onClick={async (e) => {
+        //                     // Prevent the click from triggering the toast's default onClick (if any)
         //                     e.stopPropagation();
-        //                     // redirect to /user/premium
-        //                     window.location.href = '/user/premium';
+        //                     await connectWallet();
         //                 }}
         //             >
         //                 Click here
         //             </span>{' '}
-        //             to buy premium.
+        //             to Connect to Metamask
         //         </div>,
         //         {
         //             position: 'top-right',
-        //             autoClose: 7000
+        //             autoClose: 5000
+        //             // No "onClick" at the toast level, since we only want the link clickable
         //         }
         //     );
+
         //     return;
         // }
+
+        // Premium check
+        if (isPremiumFeature && !isPremium) {
+            // Show a toast that user can click to go to /user/premium
+            toast.info(
+                <div>
+                    This feature requires a premium subscription.{' '}
+                    <span
+                        style={{
+                            fontWeight: 'bold',
+                            textDecoration: 'underline',
+                            color: '#007bff',
+                            cursor: 'pointer'
+                        }}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            // redirect to /user/premium
+                            window.location.href = '/user/premium';
+                        }}
+                    >
+                        Click here
+                    </span>{' '}
+                    to buy premium.
+                </div>,
+                {
+                    position: 'top-right',
+                    autoClose: 7000
+                }
+            );
+            return;
+        }
 
         // Check microphone permission
         const hasPermission = await checkMicrophonePermission();
@@ -467,7 +520,7 @@ export default function ChatInterface({ mode = 'text' }) {
                 {/* Input Area */}
                 <div className="border-t p-4 bg-white">
                     {/* Example premium message if needed */}
-                    {(
+                    {isPremiumFeature && (
                         <div className="flex items-center justify-center mb-4 text-sm text-gray-600">
                             <FaLock className="mr-2" />
                             This feature requires a premium subscription

@@ -23,9 +23,14 @@ Keep the response clear and conversational but professional.
 export async function POST(request) {
     try {
         // Check premium access
-        const walletAddress = request.headers.get('wallet-address');
-        if (!walletAddress) {
-            return NextResponse.json({ error: 'Wallet address required' }, { status: 401 });
+        // const walletAddress = request.headers.get('wallet-address');
+        // if (!walletAddress) {
+        //     return NextResponse.json({ error: 'Wallet address required' }, { status: 401 });
+        // }
+
+        const emailAddress = request.headers.get('email');
+        if(!emailAddress) {
+            return NextResponse.json({ error: 'Email address required' }, { status: 401 });
         }
 
         // const hasAccess = await checkPremiumAccess(walletAddress);
